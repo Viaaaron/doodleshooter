@@ -1,0 +1,10 @@
+{
+  "name": "doodleshooter-mobile",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "dev": "python3 serve.py 8910",
+    "ios:generate": "cd ios && xcodegen generate"
+  }
+}

@@ -1,3 +1,13 @@
+# Doodle Shooter — Mobile fork
+
+An iPhone and iPad Xcode app with a left analog stick, drag-to-look, fire, aim/zoom, weapon switching, and the original movement and combat actions. The original game is bundled locally for offline solo play.
+
+Open [`ios/DoodleShooter.xcodeproj`](ios/DoodleShooter.xcodeproj). See the [iOS build and controls guide](ios/README.md).
+
+Original game by [iifor](https://github.com/iifor/doodleshooter). Original documentation follows.
+
+---
+
 # Doodle District
 
 A first-person survival shooter drawn in blue ballpoint on lined notebook paper. Grapple across

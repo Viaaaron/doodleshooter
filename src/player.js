@@ -373,7 +373,7 @@ export class Player {
     return null;
   }
   _fireGrapple() {
-    if (this.grapStam < STAM_MIN) { audio.winded(); this.ctx.hud.tip('抓钩需要缓口气', 0.9); return; }
+    if (this.grapStam < STAM_MIN) { audio.winded(); this.ctx.hud.tip('Grapple需要缓口气', 0.9); return; }
     const t = this._findGrappleTarget(); if (!t) { audio.empty(); return; }
     this.grapStam -= STAM_FIRE; this.stamPause = STAM_PAUSE;
     const g = this.grapple; g.state = 'fly'; g.anchor.copy(t.point); this._handPos(g.from); g.hook.copy(g.from); g.flyT = 0; g.flyDur = clamp(t.dist / 110, 0.04, 0.6); g.enemy = t.enemy || null; g.mover = t.mover || null; g.t = 0;

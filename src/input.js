@@ -1,5 +1,6 @@
 // Unified keyboard/mouse + gamepad (PS5 DualSense / standard mapping) input.
 import { clamp } from './util.js';
+import { hasTouch, TouchControls } from './touch.js';
 
 const KEYMAP = {
   KeyW: 'forward', KeyS: 'back', KeyA: 'left', KeyD: 'right', ArrowUp: 'forward', ArrowDown: 'back', ArrowLeft: 'left', ArrowRight: 'right',
@@ -24,6 +25,8 @@ export class Input {
     this.pointerLocked = false; this.anyInput = false; this.lastPadButtons = [];
     this.onLockChange = null; this.onAnyInput = null; this.lastActive = performance.now();
     this.invertY = false; this.onDeviceChange = null;
+    this.touchEnabled = hasTouch(); this.touchSens = 0.0045;
+    this.touch = this.touchEnabled ? new TouchControls(this) : null;
 
     window.addEventListener('keydown', (e) => {
       if (e.repeat) return;
@@ -44,6 +47,7 @@ export class Input {
       this.mx += dx; this.my += dy; this.usingGamepad = false; this.lastActive = performance.now();
     });
     document.addEventListener('mousedown', (e) => {
+      if (e.sourceCapabilities?.firesTouchEvents || (this.touchEnabled && !this.pointerLocked)) return;
       const a = MOUSEMAP[e.button]; if (a) this.mouseBtns[a] = true;
       if (this.usingGamepad && this.onDeviceChange) this.onDeviceChange(false);
       this.usingGamepad = false; this.anyInput = true; this.lastActive = performance.now();
@@ -62,6 +66,7 @@ export class Input {
   // browsers refuse a new pointer lock for about a second after Esc released the last one, so a
   // failed request is retried until it takes or the game stops wanting it
   requestLock() {
+    if (this.touchEnabled) return;
     this.wantLock = true; if (this.pointerLocked) return;
     const attempt = (opts) => { try { const p = this.canvas.requestPointerLock(opts); return p && p.catch ? p : Promise.resolve(); } catch (err) { return Promise.reject(err); } };
     attempt({ unadjustedMovement: true }).catch(() => attempt()).catch(() => {
@@ -81,6 +86,8 @@ export class Input {
     // rotate button states
     this.prev = this.state; this.state = {};
     const s = this.state;
+    const touch = this.touch?.sample();
+    if (touch) Object.assign(s, touch.buttons);
     for (const k in this.keys) if (this.keys[k]) s[k] = true;
     for (const k in this.mouseBtns) if (this.mouseBtns[k]) s[k] = true;
     if (this.wheel > 0) s.nextWeapon = true; else if (this.wheel < 0) s.prevWeapon = true; this.wheel = 0;
@@ -88,8 +95,10 @@ export class Input {
     // movement from keys
     let mx = (s.right ? 1 : 0) - (s.left ? 1 : 0);
     let my = (s.forward ? 1 : 0) - (s.back ? 1 : 0);
+    if (touch && (touch.move.x || touch.move.y)) { mx = touch.move.x; my = touch.move.y; }
     // look from mouse
     let lx = -this.mx * this.mouseSens, ly = -this.my * this.mouseSens; this.mx = 0; this.my = 0;
+    if (touch) { lx -= touch.look.x * this.touchSens; ly -= touch.look.y * this.touchSens; }
 
     const pad = this._getPad(); const padS = {};
     if (pad) {
