@@ -1,6 +1,27 @@
 import XCTest
 
 final class DoodleShooterUITests: XCTestCase {
+    func testDoubleTapsKeepGameAtFixedScale() throws {
+        continueAfterFailure = false
+        XCUIDevice.shared.orientation = .landscapeLeft
+        let app = XCUIApplication()
+        app.launch()
+        let play = app.webViews.buttons.matching(NSPredicate(format: "label BEGINSWITH 'PLAY SOLO'")).firstMatch
+        XCTAssertTrue(play.waitForExistence(timeout: 40))
+        play.tap()
+        let fire = app.webViews.buttons["Fire"]
+        XCTAssertTrue(fire.waitForExistence(timeout: 10))
+        let fireFrame = fire.frame
+        app.webViews.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.30, dy: 0.35)).doubleTap()
+        assertFrame(of: fire, matches: fireFrame)
+        fire.doubleTap()
+        assertFrame(of: fire, matches: fireFrame)
+        app.switches["Toggle aim"].tap()
+        assertFrame(of: fire, matches: fireFrame)
+        app.webViews.buttons["Switch weapon"].tap()
+        XCTAssertTrue(app.webViews.staticTexts["Shotgun"].waitForExistence(timeout: 3))
+    }
+
     func testPlayAndTouchControls() throws {
         continueAfterFailure = false
         XCUIDevice.shared.orientation = .landscapeLeft
@@ -11,18 +32,13 @@ final class DoodleShooterUITests: XCTestCase {
         play.tap()
         let fire = app.webViews.buttons["Fire"]
         XCTAssertTrue(fire.waitForExistence(timeout: 10))
-        let fireFrame = fire.frame
-        let screen = app.webViews.firstMatch
-        screen.coordinate(withNormalizedOffset: CGVector(dx: 0.30, dy: 0.35)).doubleTap()
-        assertFrame(of: fire, matches: fireFrame)
-        fire.doubleTap()
-        assertFrame(of: fire, matches: fireFrame)
         fire.press(forDuration: 0.3)
         app.switches["Toggle aim"].tap()
         app.webViews.buttons["Switch weapon"].tap()
         XCTAssertTrue(app.webViews.staticTexts["Shotgun"].waitForExistence(timeout: 3))
         app.webViews.buttons["Jump"].tap()
         app.webViews.buttons["Reload"].tap()
+        let screen = app.webViews.firstMatch
         screen.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.70)).press(forDuration: 0.1, thenDragTo: screen.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.52)))
         screen.coordinate(withNormalizedOffset: CGVector(dx: 0.60, dy: 0.45)).press(forDuration: 0.1, thenDragTo: screen.coordinate(withNormalizedOffset: CGVector(dx: 0.73, dy: 0.45)))
         let shot = XCTAttachment(screenshot: app.screenshot())
