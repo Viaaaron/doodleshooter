@@ -16,6 +16,8 @@ final class GameViewController: UIViewController, WKNavigationDelegate {
         super.viewDidLoad()
         view.backgroundColor = UIColor(red: 0.965, green: 0.953, blue: 0.902, alpha: 1)
         let configuration = WKWebViewConfiguration()
+        // Keep the page at its authored scale; gun aiming changes the game camera.
+        configuration.ignoresViewportScaleLimits = false
         configuration.allowsInlineMediaPlayback = true
         configuration.mediaTypesRequiringUserActionForPlayback = []
         webView = WKWebView(frame: .zero, configuration: configuration)
@@ -24,6 +26,8 @@ final class GameViewController: UIViewController, WKNavigationDelegate {
         webView.backgroundColor = view.backgroundColor
         webView.scrollView.isScrollEnabled = false
         webView.scrollView.bounces = false
+        webView.scrollView.bouncesZoom = false
+        webView.scrollView.pinchGestureRecognizer?.isEnabled = false
         webView.scrollView.contentInsetAdjustmentBehavior = .never
         webView.isMultipleTouchEnabled = true
         webView.allowsBackForwardNavigationGestures = false

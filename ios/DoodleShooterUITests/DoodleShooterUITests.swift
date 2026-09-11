@@ -11,13 +11,18 @@ final class DoodleShooterUITests: XCTestCase {
         play.tap()
         let fire = app.webViews.buttons["Fire"]
         XCTAssertTrue(fire.waitForExistence(timeout: 10))
+        let fireFrame = fire.frame
+        let screen = app.webViews.firstMatch
+        screen.coordinate(withNormalizedOffset: CGVector(dx: 0.30, dy: 0.35)).doubleTap()
+        assertFrame(of: fire, matches: fireFrame)
+        fire.doubleTap()
+        assertFrame(of: fire, matches: fireFrame)
         fire.press(forDuration: 0.3)
         app.switches["Toggle aim"].tap()
         app.webViews.buttons["Switch weapon"].tap()
         XCTAssertTrue(app.webViews.staticTexts["Shotgun"].waitForExistence(timeout: 3))
         app.webViews.buttons["Jump"].tap()
         app.webViews.buttons["Reload"].tap()
-        let screen = app.webViews.firstMatch
         screen.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.70)).press(forDuration: 0.1, thenDragTo: screen.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.52)))
         screen.coordinate(withNormalizedOffset: CGVector(dx: 0.60, dy: 0.45)).press(forDuration: 0.1, thenDragTo: screen.coordinate(withNormalizedOffset: CGVector(dx: 0.73, dy: 0.45)))
         let shot = XCTAttachment(screenshot: app.screenshot())
@@ -30,5 +35,14 @@ final class DoodleShooterUITests: XCTestCase {
         XCUIDevice.shared.press(.home)
         app.activate()
         XCTAssertTrue(app.webViews.staticTexts["Paused"].waitForExistence(timeout: 5), "Backgrounding must release touches and pause")
+    }
+
+    private func assertFrame(of element: XCUIElement, matches expected: CGRect,
+                             file: StaticString = #filePath, line: UInt = #line) {
+        let actual = element.frame
+        XCTAssertEqual(actual.minX, expected.minX, accuracy: 1, "Double taps must not pan the page", file: file, line: line)
+        XCTAssertEqual(actual.minY, expected.minY, accuracy: 1, "Double taps must not pan the page", file: file, line: line)
+        XCTAssertEqual(actual.width, expected.width, accuracy: 1, "Double taps must not zoom the page", file: file, line: line)
+        XCTAssertEqual(actual.height, expected.height, accuracy: 1, "Double taps must not zoom the page", file: file, line: line)
     }
 }

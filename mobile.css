@@ -1,4 +1,6 @@
 /* Paper and ballpoint controls, kept clear of the sight and iPhone safe areas. */
+/* Repeated taps are game input; menus can still scroll normally. */
+html, body { touch-action: manipulation; }
 #touch-controls[hidden] { display: none; }
 #touch-controls { position: fixed; inset: 0; z-index: 10; pointer-events: none; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; color: var(--ink); }
 #touch-controls button, .touch-stick, .touch-look { pointer-events: auto; touch-action: none; }
