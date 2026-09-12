@@ -1,6 +1,41 @@
 import XCTest
 
 final class DoodleShooterUITests: XCTestCase {
+    func testDualStickAndWeaponWheel() throws {
+        continueAfterFailure = false
+        XCUIDevice.shared.orientation = .landscapeLeft
+        let app = XCUIApplication()
+        app.launch()
+        let play = app.webViews.buttons.matching(NSPredicate(format: "label BEGINSWITH 'PLAY SOLO'")).firstMatch
+        XCTAssertTrue(play.waitForExistence(timeout: 40))
+        play.tap()
+        let fire = app.webViews.buttons["Aim and fire joystick"]
+        XCTAssertTrue(fire.waitForExistence(timeout: 10))
+        XCTAssertTrue(app.webViews.buttons["Equip Rifle, equipped"].exists)
+        XCTAssertTrue(app.webViews.buttons["Equip Shotgun, next"].exists)
+        for (name, next) in [("Shotgun", "Sniper"), ("Sniper", "Katana"), ("Katana", "Rifle"), ("Rifle", "Shotgun")] {
+            app.webViews.buttons["Switch weapon"].tap()
+            XCTAssertTrue(app.webViews.buttons["Equip \(name), equipped"].waitForExistence(timeout: 3))
+            XCTAssertTrue(app.webViews.buttons["Equip \(next), next"].exists)
+        }
+        app.webViews.buttons["Equip Sniper"].tap()
+        XCTAssertTrue(app.webViews.buttons["Equip Sniper, equipped"].waitForExistence(timeout: 3))
+        app.webViews.buttons["Equip Shotgun"].tap()
+        XCTAssertTrue(app.webViews.buttons["Equip Shotgun, equipped"].waitForExistence(timeout: 3))
+        fire.press(forDuration: 1.8)
+        let ammo = app.webViews.images.matching(NSPredicate(format: "label BEGINSWITH 'Ammo: '")).firstMatch
+        XCTAssertTrue(ammo.waitForExistence(timeout: 2))
+        let remaining = try XCTUnwrap(Int(ammo.label.replacingOccurrences(of: "Ammo: ", with: "")))
+        XCTAssertLessThan(remaining, 5, "Holding the aiming stick should repeat shotgun fire at its normal rate")
+        let center = fire.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.4))
+        center.press(forDuration: 0.1, thenDragTo: center.withOffset(CGVector(dx: 35, dy: -15)))
+        let shot = XCTAttachment(screenshot: app.screenshot())
+        shot.name = "Dual touch sticks and weapon wheel"; shot.lifetime = .keepAlways; add(shot)
+        app.webViews.buttons["Pause"].tap()
+        XCTAssertTrue(app.webViews.staticTexts["Paused"].waitForExistence(timeout: 5))
+        XCTAssertFalse(fire.exists)
+    }
+
     func testControllerMappingPersists() throws {
         continueAfterFailure = false
         XCUIDevice.shared.orientation = .landscapeLeft
@@ -39,7 +74,7 @@ final class DoodleShooterUITests: XCTestCase {
         let play = app.webViews.buttons.matching(NSPredicate(format: "label BEGINSWITH 'PLAY SOLO'")).firstMatch
         XCTAssertTrue(play.waitForExistence(timeout: 40))
         play.tap()
-        let fire = app.webViews.buttons["Fire"]
+        let fire = app.webViews.buttons["Aim and fire joystick"]
         XCTAssertTrue(fire.waitForExistence(timeout: 10))
         let fireFrame = fire.frame
         app.webViews.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.30, dy: 0.35)).doubleTap()
@@ -49,7 +84,7 @@ final class DoodleShooterUITests: XCTestCase {
         app.switches["Toggle aim"].tap()
         assertFrame(of: fire, matches: fireFrame)
         app.webViews.buttons["Switch weapon"].tap()
-        XCTAssertTrue(app.webViews.staticTexts["Shotgun"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.webViews.buttons["Equip Shotgun, equipped"].waitForExistence(timeout: 3))
     }
 
     func testPlayAndTouchControls() throws {
@@ -60,12 +95,12 @@ final class DoodleShooterUITests: XCTestCase {
         let play = app.webViews.buttons.matching(NSPredicate(format: "label BEGINSWITH 'PLAY SOLO'")).firstMatch
         XCTAssertTrue(play.waitForExistence(timeout: 40), "Bundled modules and WebGL should load offline")
         play.tap()
-        let fire = app.webViews.buttons["Fire"]
+        let fire = app.webViews.buttons["Aim and fire joystick"]
         XCTAssertTrue(fire.waitForExistence(timeout: 10))
         fire.press(forDuration: 0.3)
         app.switches["Toggle aim"].tap()
         app.webViews.buttons["Switch weapon"].tap()
-        XCTAssertTrue(app.webViews.staticTexts["Shotgun"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.webViews.buttons["Equip Shotgun, equipped"].waitForExistence(timeout: 3))
         app.webViews.buttons["Jump"].tap()
         app.webViews.buttons["Reload"].tap()
         let screen = app.webViews.firstMatch

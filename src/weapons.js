@@ -122,7 +122,7 @@ export class Gun extends ViewModel {
       if (this.reloadT >= this.reloadDur) { this.mag++; this.reserve--; this.reloadT = 0; if (this.mag >= this.magSize || this.reserve <= 0) { this.reloading = false; if (this.handL) this.handL.position.copy(this.handLPos); if (this.needPump) this.pumpT = this.cycleDur; } else audio.shell(); }
     }
     if (st.reloadPressed && this.mag < this.magSize && this.reserve > 0 && !this.reloading && this.pumpT <= 0) { this.startReload(); return; }
-    const wantFire = this.auto ? st.fire : st.firePressed;
+    const wantFire = this.auto || st.repeatFire ? st.fire : st.firePressed;
     if (wantFire && this.fireT <= 0 && this.pumpT <= 0 && !st.blockFire) {
       if (this.mag <= 0) { if (st.firePressed) { audio.empty(); this.startReload(); } }
       else { if (this.reloading) { this.reloading = false; if (this.handL) this.handL.position.copy(this.handLPos); } this.fire(st); }

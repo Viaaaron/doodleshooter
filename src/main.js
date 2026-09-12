@@ -595,7 +595,7 @@ function friendlyError(err) {
 function setStatus(t) { lobby.status = t; const el = hud.el.panel.querySelector('#status'); if (el) el.textContent = t; }
 
 // ---------------- screens ----------------
-function controlsHTML() { return input.touchEnabled ? '<p class="mobile-help">Left stick to move; push fully forward to sprint. Drag the right side to look. Hold FIRE and drag to shoot while aiming. Tap AIM to zoom, SWITCH for your next weapon.</p>' : CONTROLS_HTML; }
+function controlsHTML() { return input.touchEnabled ? '<p class="mobile-help">Left stick moves; push forward to sprint. Hold the right stick to fire and drag it to aim. Lift to stop firing. Swipe open space to look without shooting. Tap AIM to zoom. The weapon wheel shows what’s next; tap a gun to equip it.</p>' : CONTROLS_HTML; }
 function settingsHTML() {
   return `<div class="settings" id="settings">
     <button type="button" id="controllerSettingsBtn">Controller settings</button>
@@ -841,6 +841,7 @@ function step(now) {
   audio.setListener(player.eye, player.right);
   const w = player.weapon; if (w.isGun) hud.setAmmo(w.mag, w.reserve, w.magSize, w.reloading); else hud.setKatana();
   hud.setSlots(player.weapons.map((wp, i) => ({ name: wp.name, active: i === player.weaponIndex, ammo: wp.isGun ? wp.mag + '/' + wp.reserve : '∞', empty: wp.isGun && wp.mag === 0 && wp.reserve === 0 })));
+  input.touch?.setWeapons(player.weapons, player.weaponIndex);
   hud.setGrenades(player.grenades); hud.setGrappleStamina(player.grapStam); hud.setHealth(player.hp, player.maxHp); hud.setSpread(w.spreadPx); hud.update(dt);
   if (online()) hud.setFocusMeter(playing, player.grapStam, false, 'Grapple');
   else hud.setFocusMeter(playing && (w.kind === 'katana' || game.katanaStreak > 0 || game.focus.active), game.focus.active ? 1 : clamp(game.katanaStreak / KATANA_CHARGE_KILLS, 0, 1), game.focus.active, 'Katana');

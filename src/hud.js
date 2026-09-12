@@ -15,7 +15,7 @@ export class HUD {
       <div class="bossbar" id="bossbar"><div class="bossname" id="bossname"></div><div class="bar big"><div class="fill red" id="bossfill"></div></div></div>
       <div class="hud-bl">
         <div class="health"><span>HP</span><div class="bar"><div class="fill" id="hpfill"></div></div><span id="hpnum">100</span></div>
-        <div class="ammo"><b id="mag">30</b><span id="reserve">/120</span><span class="reloading" id="reloading"></span><span class="nades" id="nades" title="Grenade"></span></div>
+        <div class="ammo"><b id="mag" role="img" aria-label="Ammo: 30">30</b><span id="reserve">/120</span><span class="reloading" id="reloading"></span><span class="nades" id="nades" title="Grenade"></span></div>
         <div class="tally" id="tally"></div>
       </div>
       <div class="hud-br"><div class="slots" id="slots"></div><div class="weapon" id="weapon">Rifle</div><div class="hint" id="hint"></div></div>
@@ -56,10 +56,11 @@ export class HUD {
   grappleTarget(state) { this.el.gret.className = 'grapple-ret' + (state === 1 ? ' on' : state === 2 ? ' on attached' : ''); }
   hitmarker(kill = false, crit = false) { const h = this.el.hitmarker; h.className = 'hitmarker' + (kill ? ' kill' : '') + (crit ? ' crit' : ''); void h.offsetWidth; h.classList.add('show'); }
   setAmmo(mag, reserve, magSize, reloading = false) {
+    if (mag !== this._lastTally) this.el.mag.setAttribute('aria-label', `Ammo: ${mag}`);
     this.el.mag.textContent = mag; this.el.reserve.textContent = '/' + reserve; this.el.reloading.textContent = reloading ? ' Reloading…' : '';
     if (mag !== this._lastTally) { this._lastTally = mag; let s = ''; for (let i = 0; i < Math.min(mag, 40); i++) s += '<i></i>'; this.el.tally.innerHTML = s; }
   }
-  setKatana() { this.el.mag.textContent = '∞'; this.el.reserve.textContent = ''; this.el.reloading.textContent = ''; if (this._lastTally !== -1) { this.el.tally.innerHTML = ''; this._lastTally = -1; } }
+  setKatana() { this.el.mag.setAttribute('aria-label', 'Unlimited'); this.el.mag.textContent = '∞'; this.el.reserve.textContent = ''; this.el.reloading.textContent = ''; if (this._lastTally !== -1) { this.el.tally.innerHTML = ''; this._lastTally = -1; } }
   setSlots(slots) {
     const key = slots.map((s) => `${s.name}|${s.active ? 1 : 0}|${s.ammo}`).join(';'); if (key === this._lastSlots) return; this._lastSlots = key;
     this.el.slots.innerHTML = slots.map((s, i) => `<div class="slot${s.active ? ' active' : ''}${s.empty ? ' empty' : ''}"><span class="num">${i + 1}</span>${s.name}<span class="sammo">${s.ammo}</span></div>`).join('');
@@ -119,4 +120,4 @@ export const CONTROLS_HTML = `
   </div>
 </div>`;
 
-const TOUCH_KEYS = { fire: 'FIRE', aim: 'AIM', block: 'AIM', jump: 'JUMP', sprint: 'stick forward', slide: 'SLIDE', dash: 'SLIDE', grapple: 'HOOK', melee: 'SLASH', reload: 'RELOAD', grenade: 'GRENADE', focus: 'AIM + FIRE', next: 'SWITCH', pause: 'Ⅱ', confirm: 'tap', score: 'SCORE' };
+const TOUCH_KEYS = { fire: 'right stick', aim: 'AIM', block: 'AIM', jump: 'JUMP', sprint: 'stick forward', slide: 'SLIDE', dash: 'SLIDE', grapple: 'HOOK', melee: 'SLASH', reload: 'RELOAD', grenade: 'GRENADE', focus: 'AIM + right stick', next: 'weapon wheel', pause: 'Ⅱ', confirm: 'tap', score: 'SCORE' };

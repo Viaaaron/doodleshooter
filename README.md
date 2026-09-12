@@ -8,6 +8,8 @@ Plug in your Backbone, then use the left stick to move and the right stick to lo
 
 Touch controls return when you touch the screen or disconnect the controller. Disconnection pauses solo play. Page zoom is disabled, so double taps stay game input.
 
+On the touchscreen, use the left stick to move and hold the right stick to fire while dragging it to aim. Swipe open space to look without firing; tap AIM to toggle zoom. The mini weapon wheel highlights your equipped weapon and the next in rotation. Tap NEXT to cycle, or tap a weapon icon to equip it directly.
+
 Open [`ios/DoodleShooter.xcodeproj`](ios/DoodleShooter.xcodeproj). See the [iOS build and controls guide](ios/README.md).
 
 Friends can clone this repo and build with their own Apple development team. This repo link shares the source; it is not an App Store or TestFlight install link.

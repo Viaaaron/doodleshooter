@@ -7,10 +7,10 @@ The Xcode app bundles the original [iifor/doodleshooter](https://github.com/iifo
 Hold the phone in landscape. Tap **PLAY SOLO**.
 
 - Left analog stick: move; push fully forward to sprint.
-- Drag the right side: look around.
-- FIRE: hold to fire; drag on FIRE to keep looking while shooting.
+- Right analog stick: hold to fire and drag to aim. Holding off-center keeps turning; lift your thumb to stop both. Small movements aim precisely, larger movements turn faster. Shotgun and sniper shots repeat at their normal firing rates while held.
+- Swipe the open screen: look around without firing.
 - AIM: tap to toggle aiming. The sniper uses its original scope; the katana blocks.
-- SWITCH: cycle the rifle, shotgun, sniper, and katana.
+- Weapon wheel: the filled icon is equipped, the red icon is next. Tap **NEXT** to cycle rifle → shotgun → sniper → katana → rifle, or tap any weapon icon to equip it directly.
 - JUMP: jump, double jump, or wall jump.
 - SLIDE: slide on the ground or dash in the air.
 - HOOK: grapple; hold to reel in; tap again to detach.

@@ -114,7 +114,14 @@ export class Input {
     if (touch && (touch.move.x || touch.move.y)) { mx = touch.move.x; my = touch.move.y; }
     // look from mouse
     let lx = -this.mx * this.mouseSens, ly = -this.my * this.mouseSens; this.mx = 0; this.my = 0;
-    if (touch) { lx -= touch.look.x * this.touchSens; ly -= touch.look.y * this.touchSens; }
+    if (touch) {
+      lx -= touch.look.x * this.touchSens; ly -= touch.look.y * this.touchSens;
+      // A held virtual stick turns continuously, independent of frame rate.
+      const length = Math.hypot(touch.lookStick.x, touch.lookStick.y);
+      const curve = Math.pow(length, 0.65), sensitivity = this.touchSens / 0.0045;
+      lx -= touch.lookStick.x * curve * 3.4 * sensitivity * dt;
+      ly -= touch.lookStick.y * curve * 2.6 * sensitivity * dt;
+    }
 
     const pad = this._getPad();
     const sample = this.controllerSample = this.controller.sample(pad, dt);

@@ -33,16 +33,34 @@ html, body { touch-action: manipulation; }
 .stick-ring { position: relative; width: 126px; height: 126px; border: 2px solid rgba(26,48,192,.5); border-radius: 50%; background: rgba(250,248,238,.25); box-shadow: inset 0 0 0 12px rgba(26,48,192,.04); display: grid; place-items: center; }
 .stick-knob { display: block; width: 54px; height: 54px; border-radius: 50%; border: 2px solid var(--ink); background: rgba(250,248,238,.85); box-shadow: 2px 3px 0 rgba(26,48,192,.18); }
 .stick-caption { margin-top: 10px; font: 10px -apple-system, sans-serif; letter-spacing: .7px; }
-.touch-actions { position: absolute; width: 224px; height: 184px; right: max(24px, env(safe-area-inset-right)); bottom: max(20px, env(safe-area-inset-bottom)); }
-#touch-controls .touch-fire { right: 0; bottom: 10px; width: 82px; height: 82px; border-radius: 50%; color: var(--red); border: 3px solid var(--red); font-size: 13px; }
-.touch-fire span { font-size: 32px; line-height: 1; margin-bottom: 3px; }
-#touch-controls .touch-fire.held { background: var(--red); color: var(--paper); }
-.touch-aim { right: 4px; bottom: 103px; width: 65px; }
-.touch-switch { right: 85px; bottom: 133px; width: 68px; }
-.touch-reload { right: 82px; bottom: 73px; width: 68px; }
-.touch-hook { right: 165px; bottom: 100px; }
-.touch-jump { right: 93px; bottom: 6px; width: 59px; }
-.touch-slide { right: 165px; bottom: 35px; }
+.touch-actions { position: absolute; width: 216px; height: 218px; right: max(24px, env(safe-area-inset-right)); bottom: max(20px, env(safe-area-inset-bottom)); }
+.touch-fire-stick { left: auto; right: 0; bottom: 0; color: var(--red); }
+.touch-fire-stick .stick-ring { border-color: rgba(207,48,53,.55); }
+.touch-fire-stick .stick-knob { display: flex; flex-direction: column; align-items: center; justify-content: center; border-color: var(--red); }
+.fire-glyph { font: 29px/1 -apple-system, sans-serif; }
+.fire-label { font: 700 9px/1.3 -apple-system, sans-serif; }
+.touch-fire-stick.held .stick-knob { color: var(--paper); background: var(--red); }
+.touch-fire-stick.held .stick-ring { background: rgba(207,48,53,.09); border-color: var(--red); }
+.touch-fire-stick .stick-caption { font-size: 9px; letter-spacing: .1px; }
+.touch-aim { right: 2px; bottom: 169px; width: 68px; }
+.touch-hook { right: 80px; bottom: 169px; width: 64px; }
+#touch-controls .touch-reload, #touch-controls .touch-jump, #touch-controls .touch-slide { left: 0; width: 56px; font-size: 10px; }
+.touch-reload { bottom: 117px; }
+.touch-slide { bottom: 61px; }
+.touch-jump { bottom: 5px; }
+.touch-wheel { position: absolute; left: 50%; bottom: max(24px, env(safe-area-inset-bottom)); transform: translateX(-50%); width: 232px; height: 112px; }
+.wheel-track { position: absolute; inset: 0; width: 100%; height: 100%; fill: none; stroke: var(--ink); stroke-width: 1.5; opacity: .5; }
+#touch-controls .wheel-weapon { width: 48px; height: 44px; padding: 2px; border-radius: 11px 9px 12px 9px; gap: 0; font-size: 9px; letter-spacing: 0; background: rgba(250,248,238,.92); }
+.wheel-weapon svg { width: 36px; height: 25px; }
+.wheel-marker { position: absolute; top: -12px; font: 800 8px/1 -apple-system, sans-serif; letter-spacing: .3px; white-space: nowrap; padding: 2px 3px; background: var(--paper); border-radius: 3px; }
+.wheel-marker:empty { display: none; }
+#touch-controls .wheel-weapon.current { background: var(--ink); color: var(--paper); }
+.wheel-weapon.current .wheel-marker { color: var(--ink); }
+#touch-controls .wheel-weapon.next { border-color: var(--red); color: var(--red); }
+#touch-controls .wheel-weapon.empty { border-style: dashed; }
+#touch-controls .touch-switch { left: calc(50% - 55px); bottom: 0; width: 110px; height: 44px; gap: 2px; border-color: var(--red); background: rgba(250,248,238,.94); }
+.touch-switch span { font-size: 9px; letter-spacing: 1px; color: var(--red); }
+.touch-switch strong { font-size: 13px; }
 .touch-utilities { position: absolute; top: max(10px, env(safe-area-inset-top)); right: max(16px, env(safe-area-inset-right)); height: 48px; display: flex; gap: 8px; }
 #touch-controls .touch-utilities button { position: static; font-size: 10px; height: 44px; }
 #touch-controls .touch-utilities button:first-child { font-size: 23px; order: 4; }
@@ -78,6 +96,7 @@ html, body { touch-action: manipulation; }
 .mobile-controls .tally, .mobile-controls .slots, .mobile-controls .hint, .mobile-controls .modifier { display: none; }
 .mobile-controls .hud-br { bottom: max(13px, env(safe-area-inset-bottom)); right: 40%; left: 40%; text-align: center; }
 .mobile-controls .weapon { font-size: 15px; }
+.mobile-controls:not(.controller-active) .hud-br { display: none; }
 .mobile-controls .combo, .mobile-controls .timer { font-size: 14px; min-height: 0; }
 .mobile-controls .message { top: 24%; pointer-events: none; }
 .mobile-controls .msg-main { font-size: 34px; }
@@ -90,7 +109,13 @@ html, body { touch-action: manipulation; }
 .mobile-controls .fm-tube { height: 40px; width: 14px; }
 .mobile-controls .fm-label, .mobile-controls .fm-ready { font-size: 10px; }
 .mobile-controls .board { min-width: 260px; top: 15%; font-size: 17px; }
-@media (max-width: 670px) and (orientation: landscape) {
-  .touch-actions { transform: scale(.88); transform-origin: bottom right; }
-  .touch-stick { transform: scale(.88); transform-origin: bottom left; }
+@media (max-width: 740px) and (orientation: landscape) {
+  .touch-wheel { left: 44.5%; width: 208px; }
+  .touch-move { left: max(10px, env(safe-area-inset-left)); }
+  .touch-actions { right: max(10px, env(safe-area-inset-right)); }
+}
+@media (max-height: 350px) and (orientation: landscape) {
+  .touch-utilities { top: 5px; }
+  .touch-actions { bottom: max(5px, env(safe-area-inset-bottom)); }
+  .touch-move { bottom: max(5px, env(safe-area-inset-bottom)); }
 }
