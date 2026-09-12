@@ -1,6 +1,28 @@
 /* Paper and ballpoint controls, kept clear of the sight and iPhone safe areas. */
 /* Repeated taps are game input; menus can still scroll normally. */
 html, body { touch-action: manipulation; }
+.controller-dialog[hidden], .controller-chip[hidden] { display: none; }
+.controller-dialog { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: max(10px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left)); box-sizing: border-box; background: rgba(22,35,82,.45); font: 14px/1.35 -apple-system, sans-serif; color: var(--ink); user-select: none; -webkit-user-select: none; }
+.controller-panel { display: flex; flex-direction: column; width: min(940px, 100%); height: calc(100dvh - max(10px, env(safe-area-inset-top)) - max(10px, env(safe-area-inset-bottom))); max-height: 650px; min-height: 0; padding: 12px 16px; box-sizing: border-box; background: var(--paper); border: 2px solid var(--ink); border-radius: 15px 10px 16px 12px; box-shadow: 4px 5px 0 rgba(26,48,192,.2); }
+.controller-panel header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.controller-panel h2 { margin: 0; font-size: 22px; }
+.controller-panel h3 { margin: 0 0 8px; }
+.controller-status, .controller-description, .controller-help, .controller-report { margin: 4px 0 8px; font-size: 12px; }
+.controller-scroll { flex: 1; overflow: auto; min-height: 0; overscroll-behavior: contain; padding: 3px; }
+.controller-map { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; margin-bottom: 10px; }
+.controller-panel button, #controllerSettingsBtn, .controller-chip { font: 600 13px/1.2 -apple-system, sans-serif; min-height: 44px; padding: 8px 12px; border: 2px solid var(--ink); border-radius: 9px 7px 10px 8px; background: var(--paper); color: var(--ink); touch-action: manipulation; }
+.controller-map button { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; text-align: left; gap: 3px; }
+.controller-map span { font-size: 11px; opacity: .75; }
+.controller-map strong { font-size: 13px; }
+.controller-panel button.selected { background: var(--ink); color: var(--paper); }
+.controller-tuning { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 24px; align-items: center; }
+.controller-tuning label { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.controller-tuning input[type=range] { flex: 1; min-width: 110px; accent-color: var(--ink); }
+.controller-help { margin-top: 8px; margin-bottom: 0; opacity: .8; }
+.controller-report { min-height: 16px; margin-bottom: 0; }
+.controller-focus { outline: 3px solid var(--red) !important; outline-offset: 2px; }
+.controller-chip { position: fixed; z-index: 25; top: max(8px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); min-height: 36px; opacity: .9; }
+@media (max-width: 670px) { .controller-map { grid-template-columns: repeat(2, minmax(0, 1fr)); } .controller-tuning { grid-template-columns: 1fr; } }
 #touch-controls[hidden] { display: none; }
 #touch-controls { position: fixed; inset: 0; z-index: 10; pointer-events: none; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; color: var(--ink); }
 #touch-controls button, .touch-stick, .touch-look { pointer-events: auto; touch-action: none; }

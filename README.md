@@ -1,8 +1,18 @@
 # Doodle Shooter — Mobile fork
 
-An iPhone and iPad Xcode app with a left analog stick, drag-to-look, fire, aim/zoom, weapon switching, and the original movement and combat actions. The original game is bundled locally for offline solo play.
+An iPhone and iPad game played in landscape, with touch controls and native iOS game controller support for Backbone and other extended-profile controllers. The original game is bundled locally for offline solo play.
+
+**Share this public fork:** https://github.com/Viaaaron/doodleshooter
+
+Plug in your Backbone, then use the left stick to move and the right stick to look. RT / R2 fires, LT / L2 aims, A / Cross jumps, X / Square reloads, and Y / Triangle switches weapons. Open **Controller settings** from the main or pause menu to remap buttons, adjust stick deadzone and look speed, or swap sticks. Mappings are saved on your device. D-pad navigates menus; A / Cross selects and B / Circle goes back.
+
+Touch controls return when you touch the screen or disconnect the controller. Disconnection pauses solo play. Page zoom is disabled, so double taps stay game input.
 
 Open [`ios/DoodleShooter.xcodeproj`](ios/DoodleShooter.xcodeproj). See the [iOS build and controls guide](ios/README.md).
+
+Friends can clone this repo and build with their own Apple development team. This repo link shares the source; it is not an App Store or TestFlight install link.
+
+Original mobile additions are MIT-licensed under [LICENSE-MOBILE](LICENSE-MOBILE). The original upstream game has no declared license, so the entire fork is not covered by a single open-source license. See [source and license notices](THIRD_PARTY_NOTICES.md).
 
 Original game by [iifor](https://github.com/iifor/doodleshooter). Original documentation follows.
 

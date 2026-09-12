@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { InkRenderer, INK, makeInkMaterial } from './render.js';
 import { World } from './physics.js';
 import { Input } from './input.js';
+import { ControllerSettings } from './controller-settings.js';
 import { buildLevel, LEVELS } from './level.js';
 import { NavGrid } from './nav.js';
 import { Effects } from './effects.js';
@@ -47,7 +48,7 @@ let checkpoint = Number(localStorage.getItem('doodle_checkpoint') || 0);
 let myName = (localStorage.getItem('doodle_name') || '').slice(0, 14) || 'Doodle' + Math.floor(Math.random() * 90 + 10);
 const settings = { sens: Number(localStorage.getItem('doodle_sens') || 100), invert: localStorage.getItem('doodle_invert') === '1' };
 function applySettings() {
-  input.touchSens = 0.0045 * settings.sens / 100; input.mouseSens = 0.0022 * settings.sens / 100; input.padSensX = 3.4 * settings.sens / 100; input.padSensY = 2.6 * settings.sens / 100; input.invertY = settings.invert;
+  input.touchSens = 0.0045 * settings.sens / 100; input.mouseSens = 0.0022 * settings.sens / 100; input.invertY = settings.invert;
   localStorage.setItem('doodle_sens', String(settings.sens)); localStorage.setItem('doodle_invert', settings.invert ? '1' : '0');
 }
 // ---------------- game state ----------------
@@ -597,6 +598,7 @@ function setStatus(t) { lobby.status = t; const el = hud.el.panel.querySelector(
 function controlsHTML() { return input.touchEnabled ? '<p class="mobile-help">Left stick to move; push fully forward to sprint. Drag the right side to look. Hold FIRE and drag to shoot while aiming. Tap AIM to zoom, SWITCH for your next weapon.</p>' : CONTROLS_HTML; }
 function settingsHTML() {
   return `<div class="settings" id="settings">
+    <button type="button" id="controllerSettingsBtn">Controller settings</button>
     <label>Look sensitivity <input type="range" id="setSens" min="25" max="250" step="5" value="${settings.sens}"><b id="setSensV">${settings.sens}%</b></label>
     <label><input type="checkbox" id="setInv" ${settings.invert ? 'checked' : ''}> Invert vertical look</label>
     <label><input type="checkbox" id="setMus" ${musicWanted ? 'checked' : ''}> Music <span class="k">(M)</span></label>
@@ -609,6 +611,7 @@ function wireSettings() {
   sens.addEventListener('input', () => { settings.sens = Number(sens.value); out.textContent = settings.sens + '%'; applySettings(); });
   box.querySelector('#setInv').addEventListener('change', (e) => { settings.invert = e.target.checked; applySettings(); });
   box.querySelector('#setMus').addEventListener('change', (e) => { musicWanted = e.target.checked; localStorage.setItem('doodle_music', musicWanted ? '1' : '0'); audio.musicOn(musicWanted); });
+  box.querySelector('#controllerSettingsBtn').addEventListener('click', () => controllerUI.show());
 }
 function wireName(box) {
   const nb = box.querySelector('#setName'); if (!nb) return;
@@ -762,7 +765,17 @@ hud.onScreenClick = () => {
 canvas.addEventListener('click', () => { if (game.state === 'play' && !game.menu && !input.pointerLocked && !input.usingGamepad && !input.touchEnabled) input.requestLock(); });
 input.onLockChange = (locked) => { if (!locked && (game.state === 'play' || (game.state === 'dying' && online())) && !game.menu && !input.usingGamepad && !input.touchEnabled) pause(); };
 input.onDeviceChange = (pad) => { hud.setDevice(pad); hud.setWeapon(player.weapon.name, player.weapon.hint); };
-window.addEventListener('doodle-pause', () => { input.touch?.setActive(false); input.keys = {}; input.mouseBtns = {}; pause(); audio.ctx?.suspend(); });
+hud.controllerLabel = action => input.controller.label(action);
+input.onControllerDisconnect = () => { pause(); hud.tip('Controller disconnected. Touch controls are ready.', 4); };
+const controllerUI = new ControllerSettings(input, {
+  onOpen: () => { pause(); input.exitLock(); },
+  onBack: () => {
+    if (game.state === 'pause' || game.menu) resume();
+    else if (game.state === 'start' && screen !== 'main') { screen = 'main'; showStart(); }
+  }
+});
+Object.assign(window.__game, { controllerUI });
+window.addEventListener('doodle-pause', () => { input.touch?.setActive(false); input.controller.blockUntilRelease(); input.clearActions(); input.keys = {}; input.mouseBtns = {}; pause(); audio.ctx?.suspend(); });
 window.addEventListener('blur', () => { if (input.touchEnabled) pause(); });
 document.addEventListener('visibilitychange', () => { if (document.hidden && input.touchEnabled) pause(); });
 window.addEventListener('pagehide', () => { if (net.active) net.leave(); });
@@ -779,8 +792,10 @@ setInterval(() => { if (net.active && performance.now() - last > 300) step(perfo
 function step(now) {
   // never more than 50 ms a step: a bigger jump (a tab coming back) makes the springs in the view model fly apart
   const dt = Math.min(0.05, (now - last) / 1000); last = now;
-  input.touch?.setActive((game.state === 'play' || game.state === 'dying') && !game.menu);
+  input.touch?.setActive((game.state === 'play' || game.state === 'dying') && !game.menu && !input.usingGamepad && !controllerUI.open);
   input.update(dt);
+  if (controllerUI.update(input.controllerSample, dt, hud.el.screen.classList.contains('show') ? hud.el.panel : null,
+      (game.state === 'play' || game.state === 'dying') && !game.menu)) input.clearActions();
   const st = game.state; const playing = st === 'play' || st === 'dying';
   if (st === 'start' || st === 'pause' || st === 'dead' || st === 'over') { if (input.pressed('jump') || input.pressed('confirm') || (st === 'pause' && input.pressed('pause'))) hud.onScreenClick(); }
   else if ((st === 'play' || (st === 'dying' && online())) && input.pressed('pause')) { if (game.menu) resume(); else { pause(); input.exitLock(); } }

@@ -39,7 +39,7 @@ export class TouchControls {
       const radius = this.root.querySelector('.stick-ring').clientWidth * 0.38;
       if (!this.state.start(e.pointerId, kind, e.clientX, e.clientY, radius)) return;
       element.setPointerCapture(e.pointerId); element.classList.add('held');
-      this.input.usingGamepad = false; this.markActive(); this.paint();
+      this.input.setGamepadMode(false); this.markActive(); this.paint();
     });
     element.addEventListener('pointermove', e => {
       if (!this.state.pointers.has(e.pointerId)) return;

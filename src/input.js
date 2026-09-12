@@ -1,6 +1,7 @@
 // Unified keyboard/mouse + gamepad (PS5 DualSense / standard mapping) input.
 import { clamp } from './util.js';
 import { hasTouch, TouchControls } from './touch.js';
+import { ControllerState, CONTROLLER_STORAGE_KEY } from './controller-state.js';
 
 const KEYMAP = {
   KeyW: 'forward', KeyS: 'back', KeyA: 'left', KeyD: 'right', ArrowUp: 'forward', ArrowDown: 'back', ArrowLeft: 'left', ArrowRight: 'right',
@@ -9,8 +10,6 @@ const KEYMAP = {
   Digit1: 'slot1', Digit2: 'slot2', Digit3: 'slot3', Digit4: 'slot4', Digit5: 'slot5', Escape: 'pause', KeyP: 'pause', Enter: 'confirm', KeyG: 'grenade', KeyX: 'dash', AltLeft: 'dash', KeyM: 'music', KeyT: 'talk', Tab: 'score',
 };
 const MOUSEMAP = { 0: 'fire', 2: 'aim', 1: 'grapple', 3: 'grapple', 4: 'melee' };
-// Standard gamepad mapping (DualSense): 0 cross,1 circle,2 square,3 triangle,4 L1,5 R1,6 L2,7 R2,8 create,9 options,10 L3,11 R3,12-15 dpad
-const PADMAP = { 0: 'jump', 1: 'crouch', 2: 'reload', 3: 'nextWeapon', 4: 'grapple', 5: 'melee', 6: 'aim', 7: 'fire', 9: 'pause', 10: 'sprint', 11: 'grenade', 12: 'grenade', 13: 'slot5', 14: 'prevWeapon', 15: 'nextWeapon', 8: 'score', 17: 'confirm' };
 
 export class Input {
   constructor(canvas) {
@@ -25,32 +24,37 @@ export class Input {
     this.pointerLocked = false; this.anyInput = false; this.lastPadButtons = [];
     this.onLockChange = null; this.onAnyInput = null; this.lastActive = performance.now();
     this.invertY = false; this.onDeviceChange = null;
+    let savedController;
+    try { savedController = JSON.parse(localStorage.getItem(CONTROLLER_STORAGE_KEY)); } catch { /* use defaults */ }
+    this.controller = new ControllerState(savedController);
+    this.onControllerDisconnect = null;
     this.touchEnabled = hasTouch(); this.touchSens = 0.0045;
     this.touch = this.touchEnabled ? new TouchControls(this) : null;
+    window.addEventListener('doodle-controller', e => this.controller.receiveNative(e.detail));
+    window.addEventListener('pointerdown', () => this.setGamepadMode(false));
 
     window.addEventListener('keydown', (e) => {
       if (e.repeat) return;
-      this.lastActive = performance.now(); const a = KEYMAP[e.code]; if (a) { this.keys[a] = true; if (this.usingGamepad && this.onDeviceChange) this.onDeviceChange(false); this.usingGamepad = false; }
+      this.lastActive = performance.now(); const a = KEYMAP[e.code]; if (a) { this.keys[a] = true; this.setGamepadMode(false); }
       if (!e.shiftKey) this.keys.sprint = false;
       if (['Space', 'Tab', 'ArrowUp', 'ArrowDown'].includes(e.code)) e.preventDefault();
       this.anyInput = true;
     });
     window.addEventListener('keyup', (e) => { const a = KEYMAP[e.code]; if (a) this.keys[a] = false; if (!e.shiftKey) this.keys.sprint = false; });
-    document.addEventListener('visibilitychange', () => { if (document.hidden) { this.keys = {}; this.mouseBtns = {}; } });
-    window.addEventListener('blur', () => { this.keys = {}; this.mouseBtns = {}; });
+    document.addEventListener('visibilitychange', () => { if (document.hidden) { this.keys = {}; this.mouseBtns = {}; this.controller.blockUntilRelease(); } });
+    window.addEventListener('blur', () => { this.keys = {}; this.mouseBtns = {}; this.controller.blockUntilRelease(); });
     this.padState = {}; this.padPrev = {};
     document.addEventListener('mousemove', (e) => {
       if (!this.pointerLocked) return;
       let dx = e.movementX, dy = e.movementY;
       // guard against pointer-lock spikes
       if (Math.abs(dx) > 400) dx = 0; if (Math.abs(dy) > 400) dy = 0;
-      this.mx += dx; this.my += dy; this.usingGamepad = false; this.lastActive = performance.now();
+      this.mx += dx; this.my += dy; this.setGamepadMode(false); this.lastActive = performance.now();
     });
     document.addEventListener('mousedown', (e) => {
       if (e.sourceCapabilities?.firesTouchEvents || (this.touchEnabled && !this.pointerLocked)) return;
       const a = MOUSEMAP[e.button]; if (a) this.mouseBtns[a] = true;
-      if (this.usingGamepad && this.onDeviceChange) this.onDeviceChange(false);
-      this.usingGamepad = false; this.anyInput = true; this.lastActive = performance.now();
+      this.setGamepadMode(false); this.anyInput = true; this.lastActive = performance.now();
       if (e.button === 1 || e.button === 3 || e.button === 4) e.preventDefault();
     });
     document.addEventListener('mouseup', (e) => { const a = MOUSEMAP[e.button]; if (a) this.mouseBtns[a] = false; });
@@ -61,6 +65,18 @@ export class Input {
       if (this.onLockChange) this.onLockChange(this.pointerLocked);
     });
     window.addEventListener('gamepadconnected', (e) => { this.gamepadIndex = e.gamepad.index; });
+  }
+
+  setGamepadMode(value) {
+    if (this.usingGamepad === value) return;
+    this.usingGamepad = value;
+    if (value) this.touch?.reset();
+    document.body.classList.toggle('controller-active', value);
+    if (this.onDeviceChange) this.onDeviceChange(value);
+  }
+
+  clearActions() {
+    this.state = {}; this.padState = {}; this.move = { x: 0, y: 0 }; this.look = { x: 0, y: 0 };
   }
 
   // browsers refuse a new pointer lock for about a second after Esc released the last one, so a
@@ -77,7 +93,7 @@ export class Input {
 
   _getPad() {
     const pads = navigator.getGamepads ? navigator.getGamepads() : [];
-    if (this.gamepadIndex >= 0 && pads[this.gamepadIndex]) return pads[this.gamepadIndex];
+    if (this.gamepadIndex >= 0 && pads[this.gamepadIndex]?.connected) return pads[this.gamepadIndex];
     for (const p of pads) if (p && p.connected) { this.gamepadIndex = p.index; return p; }
     return null;
   }
@@ -100,29 +116,19 @@ export class Input {
     let lx = -this.mx * this.mouseSens, ly = -this.my * this.mouseSens; this.mx = 0; this.my = 0;
     if (touch) { lx -= touch.look.x * this.touchSens; ly -= touch.look.y * this.touchSens; }
 
-    const pad = this._getPad(); const padS = {};
-    if (pad) {
-      const dz = (v) => (Math.abs(v) < 0.14 ? 0 : (v - Math.sign(v) * 0.14) / 0.86);
-      const ax = dz(pad.axes[0] || 0), ay = dz(pad.axes[1] || 0), rx = dz(pad.axes[2] || 0), ry = dz(pad.axes[3] || 0);
-      let padActive = false;
-      if (Math.abs(ax) > 0 || Math.abs(ay) > 0) { mx = ax; my = -ay; padActive = true; }
-      if (Math.abs(rx) > 0 || Math.abs(ry) > 0) {
-        padActive = true;
-        const mag = Math.hypot(rx, ry);
-        if (mag > 0.94) this.padHoldTime += dt; else this.padHoldTime = 0;
-        const accel = 1 + clamp((this.padHoldTime - 0.25) / 0.6, 0, 1) * 0.9;
-        const curve = (v) => Math.sign(v) * Math.pow(Math.abs(v), 1.8);
-        lx += -curve(rx) * this.padSensX * accel * dt;
-        ly += -curve(ry) * this.padSensY * accel * dt;
-      } else this.padHoldTime = 0;
-      for (const idx in PADMAP) {
-        const b = pad.buttons[idx]; if (!b) continue;
-        const pressed = b.pressed || b.value > 0.35;
-        if (pressed) { s[PADMAP[idx]] = true; padS[PADMAP[idx]] = true; padActive = true; }
-      }
-      if (padActive) { if (!this.usingGamepad && this.onDeviceChange) this.onDeviceChange(true); this.usingGamepad = true; this.anyInput = true; this.lastActive = performance.now(); }
-      this._pad = pad;
-    } else this._pad = null;
+    const pad = this._getPad();
+    const sample = this.controllerSample = this.controller.sample(pad, dt);
+    const padS = sample.buttons;
+    Object.assign(s, padS);
+    if (sample.move.x || sample.move.y) { mx = sample.move.x; my = sample.move.y; }
+    lx -= sample.look.x * this.padSensX * dt; ly -= sample.look.y * this.padSensY * dt;
+    if (sample.active) { this.setGamepadMode(true); this.anyInput = true; this.lastActive = performance.now(); }
+    if (sample.disconnected) {
+      const wasUsing = this.usingGamepad;
+      this.setGamepadMode(false);
+      if (wasUsing && this.onControllerDisconnect) this.onControllerDisconnect();
+    }
+    this._pad = this.controller.nativeAvailable ? null : pad;
     this.padPrev = this.padState; this.padState = padS;
 
     const ml = Math.hypot(mx, my); if (ml > 1) { mx /= ml; my /= ml; }

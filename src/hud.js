@@ -41,7 +41,7 @@ export class HUD {
   setGrenades(n) { if (n === this._nades) return; this._nades = n; let h = ''; for (let i = 0; i < n; i++) h += '<i></i>'; this.el.nades.innerHTML = h; }
   // control labels follow whatever you touched last
   setDevice(pad) { if (pad === this._pad) return; this._pad = pad; this.root.classList.toggle('pad', pad); if (this.onDevice) this.onDevice(pad); }
-  key(action) { return (this._pad ? PAD_KEYS : this._touch ? TOUCH_KEYS : KB_KEYS)[action] || action; }
+  key(action) { return this._pad && this.controllerLabel ? this.controllerLabel(action) : (this._pad ? PAD_KEYS : this._touch ? TOUCH_KEYS : KB_KEYS)[action] || action; }
   setScope(on) { if (on === this._scope) return; this._scope = on; this.el.scope.classList.toggle('on', on); }
   setFocusMark(x, y) {
     const m = this.el.focusmark;

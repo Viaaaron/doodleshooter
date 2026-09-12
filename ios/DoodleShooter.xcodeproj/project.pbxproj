@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		031E11F8BEF2F7BA8913F77E /* ControllerBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 337CFAC10EE518D948B8728C /* ControllerBridge.swift */; };
 		0646D1DB383AD797C9F89BE2 /* vendor in Resources */ = {isa = PBXBuildFile; fileRef = 090BCB3B7C9C3BBC2D6E242D /* vendor */; };
 		10E99F54952CB5F529329AEE /* GameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 222EA91FA3A815A48BEFF1B2 /* GameViewController.swift */; };
 		253B2B05136391B0D4162F26 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6AB6F2AE6DDE14D755C0B119 /* Assets.xcassets */; };
@@ -35,6 +36,7 @@
 		0AE5A60BE3B7693F9AE5E3A9 /* DoodleShooterUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoodleShooterUITests.swift; sourceTree = "<group>"; };
 		222EA91FA3A815A48BEFF1B2 /* GameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewController.swift; sourceTree = "<group>"; };
 		28ED1E7524C04E941CE32DEE /* src */ = {isa = PBXFileReference; lastKnownFileType = folder; name = src; path = ../src; sourceTree = SOURCE_ROOT; };
+		337CFAC10EE518D948B8728C /* ControllerBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControllerBridge.swift; sourceTree = "<group>"; };
 		5E3EE2D1751E22D8B179E07A /* LocalGameServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalGameServer.swift; sourceTree = "<group>"; };
 		64AB120762274F6F4E573D19 /* mobile.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = mobile.css; sourceTree = "<group>"; };
 		64EEC30CEF051DEFB3D9E040 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -68,6 +70,7 @@
 			children = (
 				9DC2C2E934AA26BD3FE8C1FA /* AppDelegate.swift */,
 				6AB6F2AE6DDE14D755C0B119 /* Assets.xcassets */,
+				337CFAC10EE518D948B8728C /* ControllerBridge.swift */,
 				222EA91FA3A815A48BEFF1B2 /* GameViewController.swift */,
 				64EEC30CEF051DEFB3D9E040 /* Info.plist */,
 				5E3EE2D1751E22D8B179E07A /* LocalGameServer.swift */,
@@ -199,6 +202,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				47C23239F670D01848C4BDB4 /* AppDelegate.swift in Sources */,
+				031E11F8BEF2F7BA8913F77E /* ControllerBridge.swift in Sources */,
 				10E99F54952CB5F529329AEE /* GameViewController.swift in Sources */,
 				E83F8CB7500D55F552654547 /* LocalGameServer.swift in Sources */,
 			);

@@ -4,6 +4,7 @@ import WebKit
 final class GameViewController: UIViewController, WKNavigationDelegate {
     private var webView: WKWebView!
     private var server: LocalGameServer!
+    private var controllers: ControllerBridge?
     private let loading = UILabel()
 
     override var prefersStatusBarHidden: Bool { true }
@@ -36,6 +37,7 @@ final class GameViewController: UIViewController, WKNavigationDelegate {
         #endif
         webView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(webView)
+        controllers = ControllerBridge(webView: webView)
         NSLayoutConstraint.activate([
             webView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             webView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
@@ -64,8 +66,11 @@ final class GameViewController: UIViewController, WKNavigationDelegate {
     }
 
     func pauseGame() {
+        controllers?.setActive(false)
         webView?.evaluateJavaScript("window.dispatchEvent(new Event('doodle-pause'))", completionHandler: nil)
     }
+
+    func activateGame() { controllers?.setActive(true) }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         // Wait for the module graph and renderer, not just the HTML document.
@@ -75,7 +80,10 @@ final class GameViewController: UIViewController, WKNavigationDelegate {
     private func waitForGame(remaining: Int) {
         webView.evaluateJavaScript("Boolean(window.__game?.input && document.getElementById('soloBtn'))") { [weak self] value, _ in
             guard let self else { return }
-            if value as? Bool == true { self.loading.isHidden = true }
+            if value as? Bool == true {
+                self.loading.isHidden = true
+                self.controllers?.setPageReady(true)
+            }
             else if remaining > 0 {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { self.waitForGame(remaining: remaining - 1) }
             } else { self.loading.text = "The game couldn’t finish loading.\nClose the app and try again." }
@@ -83,6 +91,7 @@ final class GameViewController: UIViewController, WKNavigationDelegate {
     }
 
     func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
+        controllers?.setPageReady(false)
         loading.isHidden = false
         loading.text = "Redrawing the district…"
         webView.reload()

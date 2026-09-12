@@ -28,6 +28,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     func sceneDidBecomeActive(_ scene: UIScene) {
+        (window?.rootViewController as? GameViewController)?.activateGame()
         UIApplication.shared.isIdleTimerDisabled = true
     }
 }

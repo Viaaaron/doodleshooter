@@ -1,6 +1,36 @@
 import XCTest
 
 final class DoodleShooterUITests: XCTestCase {
+    func testControllerMappingPersists() throws {
+        continueAfterFailure = false
+        XCUIDevice.shared.orientation = .landscapeLeft
+        let app = XCUIApplication()
+        app.launch()
+        let settings = app.webViews.buttons["Controller settings"]
+        XCTAssertTrue(settings.waitForExistence(timeout: 40))
+        settings.tap()
+        let aButton = app.webViews.buttons.matching(NSPredicate(format: "label BEGINSWITH 'A / Cross:'")).firstMatch
+        XCTAssertTrue(aButton.waitForExistence(timeout: 5))
+        aButton.tap()
+        app.webViews.buttons["Assign Reload"].tap()
+        XCTAssertTrue(app.webViews.buttons["A / Cross: Reload"].waitForExistence(timeout: 5))
+        let shot = XCTAttachment(screenshot: app.screenshot())
+        shot.name = "Controller button mapping"; shot.lifetime = .keepAlways; add(shot)
+        app.webViews.buttons["Done"].tap()
+        app.terminate()
+        app.launch()
+        XCTAssertTrue(settings.waitForExistence(timeout: 40))
+        settings.tap()
+        let saved = app.webViews.buttons["A / Cross: Reload"]
+        XCTAssertTrue(saved.waitForExistence(timeout: 5), "Controller mappings must survive app restart")
+        app.webViews.firstMatch.swipeUp()
+        let reset = app.webViews.buttons["Restore default controls"]
+        XCTAssertTrue(reset.isHittable, "Tuning and reset controls must remain reachable in landscape")
+        reset.tap()
+        XCTAssertTrue(app.webViews.buttons["A / Cross: Jump"].waitForExistence(timeout: 5))
+        app.webViews.buttons["Done"].tap()
+    }
+
     func testDoubleTapsKeepGameAtFixedScale() throws {
         continueAfterFailure = false
         XCUIDevice.shared.orientation = .landscapeLeft
