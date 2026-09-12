@@ -1,6 +1,9 @@
 // Independent pointer ownership lets movement, aiming and firing happen together.
 export class TouchState {
-  constructor(now = () => performance.now()) { this.now = now; this.reset(); }
+  constructor(now = () => performance.now()) { this.now = now; this.moveSensitivity = 1; this.reset(); }
+  setMoveSensitivity(value) {
+    this.moveSensitivity = Number.isFinite(value) ? Math.max(0.5, Math.min(2, value)) : 1;
+  }
   reset() {
     this.pointers = new Map(); this.held = new Map(); this.pulses = new Set();
     this.move = { x: 0, y: 0 }; this.look = { x: 0, y: 0 }; this.aim = false;
@@ -52,7 +55,9 @@ export class TouchState {
     if (p.kind === 'move' || p.kind === 'aimStick') {
       const dx = (x - p.originX) / p.radius, dy = (y - p.originY) / p.radius;
       const deadzone = p.kind === 'aimStick' ? 0.06 : 0.12;
-      const length = Math.hypot(dx, dy), magnitude = Math.max(0, (Math.min(length, 1) - deadzone) / (1 - deadzone));
+      const length = Math.hypot(dx, dy), travel = Math.max(0, (Math.min(length, 1) - deadzone) / (1 - deadzone));
+      // Tune response near the center while keeping full travel at full speed.
+      const magnitude = p.kind === 'move' ? Math.pow(travel, 1 / this.moveSensitivity) : travel;
       const stick = p.kind === 'move' ? this.move : this.lookStick;
       stick.x = length ? dx / length * magnitude : 0;
       stick.y = length ? dy / length * magnitude * (p.kind === 'move' ? -1 : 1) : 0;

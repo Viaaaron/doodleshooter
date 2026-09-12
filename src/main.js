@@ -46,10 +46,16 @@ let best = Number(localStorage.getItem('doodle_best') || 0);
 let musicWanted = localStorage.getItem('doodle_music') !== '0';
 let checkpoint = Number(localStorage.getItem('doodle_checkpoint') || 0);
 let myName = (localStorage.getItem('doodle_name') || '').slice(0, 14) || 'Doodle' + Math.floor(Math.random() * 90 + 10);
-const settings = { sens: Number(localStorage.getItem('doodle_sens') || 100), invert: localStorage.getItem('doodle_invert') === '1' };
+function savedSensitivity(key, min, max) {
+  const value = Number(localStorage.getItem(key) ?? 100);
+  return Number.isFinite(value) ? clamp(value, min, max) : 100;
+}
+const settings = { sens: savedSensitivity('doodle_sens', 25, 250), moveSens: savedSensitivity('doodle_move_sens', 50, 200), invert: localStorage.getItem('doodle_invert') === '1' };
 function applySettings() {
   input.touchSens = 0.0045 * settings.sens / 100; input.mouseSens = 0.0022 * settings.sens / 100; input.invertY = settings.invert;
+  input.touch?.state.setMoveSensitivity(settings.moveSens / 100);
   localStorage.setItem('doodle_sens', String(settings.sens)); localStorage.setItem('doodle_invert', settings.invert ? '1' : '0');
+  localStorage.setItem('doodle_move_sens', String(settings.moveSens));
 }
 // ---------------- game state ----------------
 const FFA_TARGET = 20, FFA_TIME = 600, RESPAWN = 2.5;
@@ -599,7 +605,8 @@ function controlsHTML() { return input.touchEnabled ? '<p class="mobile-help">Le
 function settingsHTML() {
   return `<div class="settings" id="settings">
     <button type="button" id="controllerSettingsBtn">Controller settings</button>
-    <label>Look sensitivity <input type="range" id="setSens" min="25" max="250" step="5" value="${settings.sens}"><b id="setSensV">${settings.sens}%</b></label>
+    <label>${input.touchEnabled ? 'Aim stick sensitivity' : 'Look sensitivity'} <input type="range" id="setSens" aria-label="${input.touchEnabled ? 'Aim stick sensitivity' : 'Look sensitivity'}" min="25" max="250" step="5" value="${settings.sens}"><b id="setSensV">${settings.sens}%</b></label>
+    ${input.touchEnabled ? `<label>Move stick sensitivity <input type="range" id="setMoveSens" aria-label="Move stick sensitivity" min="50" max="200" step="5" value="${settings.moveSens}"><b id="setMoveSensV">${settings.moveSens}%</b></label>` : ''}
     <label><input type="checkbox" id="setInv" ${settings.invert ? 'checked' : ''}> Invert vertical look</label>
     <label><input type="checkbox" id="setMus" ${musicWanted ? 'checked' : ''}> Music <span class="k">(M)</span></label>
   </div>`;
@@ -609,6 +616,8 @@ function wireSettings() {
   box.addEventListener('click', (e) => e.stopPropagation()); box.addEventListener('keydown', (e) => e.stopPropagation());
   const sens = box.querySelector('#setSens'), out = box.querySelector('#setSensV');
   sens.addEventListener('input', () => { settings.sens = Number(sens.value); out.textContent = settings.sens + '%'; applySettings(); });
+  const moveSens = box.querySelector('#setMoveSens');
+  moveSens?.addEventListener('input', () => { settings.moveSens = Number(moveSens.value); box.querySelector('#setMoveSensV').textContent = settings.moveSens + '%'; applySettings(); });
   box.querySelector('#setInv').addEventListener('change', (e) => { settings.invert = e.target.checked; applySettings(); });
   box.querySelector('#setMus').addEventListener('change', (e) => { musicWanted = e.target.checked; localStorage.setItem('doodle_music', musicWanted ? '1' : '0'); audio.musicOn(musicWanted); });
   box.querySelector('#controllerSettingsBtn').addEventListener('click', () => controllerUI.show());

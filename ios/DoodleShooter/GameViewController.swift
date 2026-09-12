@@ -9,6 +9,8 @@ final class GameViewController: UIViewController, WKNavigationDelegate {
     private var lastShake: TimeInterval = 0
 
     override var canBecomeFirstResponder: Bool { true }
+    // Three fingers are gameplay input, not the system copy/paste/undo gesture.
+    override var editingInteractionConfiguration: UIEditingInteractionConfiguration { .none }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -48,6 +50,7 @@ final class GameViewController: UIViewController, WKNavigationDelegate {
         webView.scrollView.contentInsetAdjustmentBehavior = .never
         webView.isMultipleTouchEnabled = true
         webView.allowsBackForwardNavigationGestures = false
+        webView.allowsLinkPreview = false
         #if DEBUG
         webView.isInspectable = true
         #endif

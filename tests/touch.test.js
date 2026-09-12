@@ -23,6 +23,31 @@ test('analog movement has a deadzone and circular speed limit', () => {
   assert.equal(t.start(2, 'move', 0, 0), false);
   t.end(1); assert.deepEqual(t.sample().move, { x: 0, y: 0 });
 });
+test('move sensitivity changes partial travel independently from the aim stick', () => {
+  const t = new TouchState();
+  t.start(1, 'move', 0, 0, 50); t.start(2, 'aimStick', 0, 0, 50);
+  const samples = [0.5, 1, 2].map(sensitivity => {
+    t.setMoveSensitivity(sensitivity); t.drag(1, 25, -10); t.drag(2, 25, -10);
+    return t.sample();
+  });
+  const speeds = samples.map(s => Math.hypot(s.move.x, s.move.y));
+  assert.ok(speeds[0] < speeds[1] && speeds[1] < speeds[2]);
+  assert.deepEqual(samples[0].lookStick, samples[2].lookStick);
+  assert.equal(samples[0].buttons.fire, undefined);
+});
+test('every move sensitivity retains the deadzone, full speed and sprint after reset', () => {
+  const t = new TouchState();
+  for (const sensitivity of [0.5, 1, 2]) {
+    t.setMoveSensitivity(sensitivity); t.reset();
+    assert.equal(t.moveSensitivity, sensitivity);
+    t.start(1, 'move', 0, 0, 50); t.drag(1, 2, -2);
+    assert.equal(Math.hypot(t.sample().move.x, t.sample().move.y), 0);
+    t.drag(1, 0, -50);
+    assert.equal(t.sample().move.y, 1); assert.equal(t.sample().buttons.sprint, true);
+    t.drag(1, 100, -100);
+    assert.ok(Math.abs(Math.hypot(t.sample().move.x, t.sample().move.y) - 1) < 1e-10);
+  }
+});
 test('the separate fire button never moves the camera', () => {
   const t = new TouchState(); t.start(1, 'fire', 100, 100); t.drag(1, 130, 90);
   assert.deepEqual(t.sample().look, { x: 0, y: 0 });

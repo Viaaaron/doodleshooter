@@ -22,7 +22,6 @@ export class TouchControls {
         <button data-action="grenade" aria-label="Throw grenade">GRENADE</button>
         <button data-action="melee" aria-label="Quick slash">SLASH</button>
       </div>
-      <button class="touch-fire" data-action="fire" aria-label="Fire"><span>◎</span><small class="fire-label">FIRE</small></button>
       <div class="touch-meter" role="group" aria-label="Weapon meter, flick up or down">
         <svg class="meter-track" viewBox="0 0 96 192" aria-hidden="true"><g class="meter-outlines"></g><g class="meter-segments"></g><line class="meter-needle" x1="83" y1="96" x2="47" y2="38"/><circle cx="83" cy="96" r="4"/></svg>
         <div class="meter-slots"></div>
@@ -32,7 +31,10 @@ export class TouchControls {
         <button class="touch-reload" data-action="reload" aria-label="Reload">RELOAD</button>
         <button class="touch-hook" data-action="grapple" aria-label="Grapple">HOOK</button>
         <button class="touch-aim" data-action="aim" aria-label="Toggle aim" aria-pressed="false">AIM</button>
-        <div class="touch-stick touch-aim-stick" role="group" aria-label="Aim joystick"><div class="stick-ring"><span class="stick-knob"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="7"/><path d="M16 3v7m0 12v7M3 16h7m12 0h7"/></svg></span></div><span class="stick-caption">LOOK</span></div>
+        <div class="touch-aim-row">
+          <div class="touch-stick touch-aim-stick" role="group" aria-label="Aim joystick"><div class="stick-ring"><span class="stick-knob"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="7"/><path d="M16 3v7m0 12v7M3 16h7m12 0h7"/></svg></span></div><span class="stick-caption">LOOK</span></div>
+          <button class="touch-fire" data-action="fire" aria-label="Fire"><span class="fire-label">FIRE</span></button>
+        </div>
       </div>`;
     document.body.append(this.root); document.body.classList.add('mobile-controls');
     this.knob = this.root.querySelector('.touch-move .stick-knob'); this.aimButton = this.root.querySelector('.touch-aim');

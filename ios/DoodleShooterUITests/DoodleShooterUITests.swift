@@ -1,6 +1,79 @@
 import XCTest
 
 final class DoodleShooterUITests: XCTestCase {
+    func testLobbyCodeRemainsEditable() throws {
+        continueAfterFailure = false
+        XCUIDevice.shared.orientation = .landscapeLeft
+        let app = XCUIApplication()
+        app.launch()
+        let online = app.webViews.buttons.matching(NSPredicate(format: "label BEGINSWITH 'PLAY ONLINE'")).firstMatch
+        XCTAssertTrue(online.waitForExistence(timeout: 40))
+        online.tap()
+        let code = app.webViews.textFields["Code"]
+        XCTAssertTrue(code.waitForExistence(timeout: 5))
+        code.tap(); code.typeText("ABCDE")
+        XCTAssertEqual(code.value as? String, "ABCDE", "Disabling gameplay selection must preserve text entry in menus")
+    }
+
+    func testTouchSensitivityPersistsIndependently() throws {
+        continueAfterFailure = false
+        XCUIDevice.shared.orientation = .landscapeLeft
+        let app = XCUIApplication()
+        app.launch()
+        let aim = app.webViews.sliders["Aim stick sensitivity"]
+        let move = app.webViews.sliders["Move stick sensitivity"]
+        XCTAssertTrue(aim.waitForExistence(timeout: 40))
+        app.webViews.firstMatch.swipeUp()
+        XCTAssertTrue(aim.isHittable)
+        let originalAim = aim.value as? String
+        aim.coordinate(withNormalizedOffset: CGVector(dx: 0.75, dy: 0.5)).tap()
+        if aim.value as? String == originalAim { aim.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.5)).tap() }
+        let aimValue = try XCTUnwrap(aim.value as? String)
+        XCTAssertNotEqual(aimValue, originalAim)
+        XCTAssertTrue(move.isHittable)
+        let originalMove = move.value as? String
+        move.coordinate(withNormalizedOffset: CGVector(dx: 0.2, dy: 0.5)).tap()
+        if move.value as? String == originalMove { move.coordinate(withNormalizedOffset: CGVector(dx: 0.8, dy: 0.5)).tap() }
+        let moveValue = try XCTUnwrap(move.value as? String)
+        XCTAssertNotEqual(moveValue, originalMove)
+        XCTAssertEqual(aim.value as? String, aimValue, "Changing movement must not change aim sensitivity")
+        app.terminate(); app.launch()
+        XCTAssertTrue(aim.waitForExistence(timeout: 40))
+        XCTAssertEqual(aim.value as? String, aimValue)
+        XCTAssertEqual(move.value as? String, moveValue)
+        let play = app.webViews.buttons.matching(NSPredicate(format: "label BEGINSWITH 'PLAY SOLO'")).firstMatch
+        play.tap()
+        app.webViews.buttons["Pause"].tap()
+        XCTAssertTrue(aim.waitForExistence(timeout: 5))
+        XCTAssertEqual(aim.value as? String, aimValue)
+        XCTAssertEqual(move.value as? String, moveValue)
+    }
+
+    func testLongPressAndFireStrip() throws {
+        continueAfterFailure = false
+        XCUIDevice.shared.orientation = .landscapeLeft
+        let app = XCUIApplication()
+        app.launch()
+        let play = app.webViews.buttons.matching(NSPredicate(format: "label BEGINSWITH 'PLAY SOLO'")).firstMatch
+        XCTAssertTrue(play.waitForExistence(timeout: 40))
+        play.tap()
+        let fire = app.webViews.buttons["Fire"]
+        XCTAssertTrue(fire.waitForExistence(timeout: 10))
+        let aim = app.webViews.otherElements["Aim joystick"]
+        XCTAssertGreaterThan(fire.frame.minX, aim.frame.maxX)
+        XCTAssertEqual(fire.frame.minY, aim.frame.minY, accuracy: 1)
+        XCTAssertEqual(fire.frame.height, 140, accuracy: 1)
+        fire.press(forDuration: 1.2)
+        app.webViews.images.matching(NSPredicate(format: "label BEGINSWITH 'Ammo: '")).firstMatch.press(forDuration: 1.2)
+        for action in ["Copy", "Paste", "Cut", "Select", "Select All", "Undo", "Redo"] {
+            XCTAssertFalse(app.menuItems[action].exists, "Gameplay must not open an editing menu")
+            XCTAssertFalse(app.buttons[action].exists, "Long presses must not open an editing toolbar")
+        }
+        XCTAssertTrue(fire.isHittable)
+        app.webViews.buttons["Pause"].tap()
+        XCTAssertTrue(app.webViews.staticTexts["Paused"].waitForExistence(timeout: 5))
+    }
+
     func testWeaponMeterAndSeparateAim() throws {
         continueAfterFailure = false
         XCUIDevice.shared.orientation = .landscapeLeft
