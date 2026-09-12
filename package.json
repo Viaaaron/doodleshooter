@@ -5,6 +5,9 @@
   "scripts": {
     "test": "node --test tests/*.test.js",
     "dev": "python3 serve.py 8910",
+    "ios:build": "python3 scripts/ios-build.py",
+    "ios:device": "python3 scripts/ios-build.py --install",
+    "ios:signing": "python3 scripts/ios-build.py --check-signing",
     "ios:generate": "cd ios && xcodegen generate"
   }
 }

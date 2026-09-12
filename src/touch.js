@@ -42,6 +42,7 @@ export class TouchControls {
     this.bind(this.root.querySelector('.touch-move'), 'move');
     this.bind(this.root.querySelector('.touch-aim-stick'), 'aimStick');
     this.bind(this.root.querySelector('.touch-meter'), 'weaponMeter');
+    this.bind(this.root.querySelector('.touch-actions'), 'guard');
     this.bind(this.root.querySelector('.touch-look'), 'gesture');
     for (const button of this.root.querySelectorAll('[data-action]')) this.bind(button, button.dataset.action);
     this.root.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); });
@@ -69,6 +70,7 @@ export class TouchControls {
       e.preventDefault();
       if (e.type === 'pointerup') this.state.drag(e.pointerId, e.clientX, e.clientY);
       this.state.end(e.pointerId, e.type !== 'pointerup');
+      if (kind === 'aimStick') this.input.touchAim.reset();
       if (![...this.state.pointers.values()].some(p => p.kind === kind)) element.classList.remove('held');
       this.paint();
     };
@@ -128,6 +130,7 @@ export class TouchControls {
   reset() {
     // Drop ownership before releasing capture, so lostpointercapture cannot reapply state.
     const ids = [...this.state.pointers.keys()]; this.state.reset();
+    this.input.touchAim.reset();
     for (const el of this.root.querySelectorAll('.held')) {
       el.classList.remove('held'); for (const id of ids) if (el.hasPointerCapture(id)) el.releasePointerCapture(id);
     }

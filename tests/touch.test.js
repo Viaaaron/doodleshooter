@@ -150,13 +150,23 @@ test('a downward swipe slides once, leaves the camera steady and outlasts finger
   now = 851; assert.equal(t.sample().buttons.crouch, undefined);
 });
 
-test('sideways and upward swipes look without jumping or sliding', () => {
+test('sideways and upward screen swipes do not aim, jump or slide', () => {
   const t = new TouchState();
   for (const [x, y] of [[40, 6], [2, -45]]) {
     t.start(1, 'gesture', 0, 0); t.drag(1, x, y); t.end(1);
-    const frame = t.sample(); assert.deepEqual(frame.look, { x, y });
+    const frame = t.sample(); assert.deepEqual(frame.look, { x: 0, y: 0 });
     assert.deepEqual(frame.buttons, {});
   }
+});
+test('misses near the controls cannot jump, slide, fire or move the camera', () => {
+  const t = new TouchState();
+  t.start(1, 'guard', 10, 10); t.end(1);
+  assert.deepEqual(t.sample().buttons, {});
+  t.start(2, 'guard', 10, 10); t.drag(2, 10, 80); t.end(2);
+  const frame = t.sample();
+  assert.deepEqual(frame.buttons, {});
+  assert.deepEqual(frame.look, { x: 0, y: 0 });
+  assert.deepEqual(frame.lookStick, { x: 0, y: 0 });
 });
 
 test('long holds, out-and-back drags, cancellations and resets never become accidental gestures', () => {

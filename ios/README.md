@@ -7,11 +7,11 @@ The Xcode app bundles the original [iifor/doodleshooter](https://github.com/iifo
 Hold the phone in landscape. Tap **PLAY SOLO**.
 
 - Left analog stick: move; push fully forward to sprint.
-- Right analog stick: aim only. Holding off-center keeps turning; lift your thumb to stop. Small movements aim precisely, larger movements turn faster.
+- Right analog stick: aim only. A soft center response and a short acceleration ramp smooth out small thumb movements. Holding off-center keeps turning; lift your thumb to stop immediately. Larger movements still turn quickly.
 - FIRE: hold the narrow vertical strip beside the right analog stick to shoot. The strip matches the stick ring's height and has a 44-point touch target. Shotgun and sniper shots repeat at their normal firing rates while held.
 - Tap open space: jump; tap again for a double jump.
 - Swipe down on open space: a short ground slide, or an air dash. The slide continues after you lift your finger, then ends automatically.
-- Swipe sideways or up on open space: look around without firing. Downward swipes keep the camera steady.
+- Open-screen gestures never change your aim. Only taps to jump and downward swipes to slide or air dash trigger actions; other swipes are ignored.
 - AIM: tap to toggle aiming. The sniper uses its original scope; the katana blocks.
 - Weapon meter: four icons on a curved vertical gauge. Flick up for the next weapon, down for the previous one, or tap an icon to equip it. The filled segment and needle mark your current weapon. Top to bottom: rifle → shotgun → sniper → katana; flicking wraps at either end.
 - Shake to reload: the iOS app recognizes a shake during play. A progress bar below the crosshair shows the reload, alongside the gun's reload animation. Reload requests wait for the shotgun pump or sniper bolt to finish cycling. Shakes in menus are ignored.
@@ -19,7 +19,7 @@ Hold the phone in landscape. Tap **PLAY SOLO**.
 - HOOK: grapple; hold to reel in; tap again to detach.
 - GRENADE (hold to throw farther), SLASH, SCORE and pause retain the original actions.
 
-The main and pause menus include separate **Aim stick sensitivity** (25–250%) and **Move stick sensitivity** (50–200%) sliders. Scroll the panel to reach them. Aim sensitivity controls turning speed and open-screen look swipes. Lower movement sensitivity gives finer control near the center; higher sensitivity responds sooner. Full stick travel still reaches full speed at every setting. Both settings, inverted look, music, best score and checkpoints are saved on the device.
+The main and pause menus include separate **Aim stick sensitivity** (25–250%) and **Move stick sensitivity** (50–200%) sliders. Scroll the panel to reach them. Aim sensitivity controls the right stick's turning speed. Lower movement sensitivity gives finer control near the center; higher sensitivity responds sooner. Full stick travel still reaches full speed at every setting. Both settings, inverted look, music, best score and checkpoints are saved on the device. The FIRE strip has extra touch padding; nearby gaps in the right controls absorb misses so they do not jump or slide.
 
 Text-selection callouts and iOS three-finger copy/paste/undo gestures are disabled for gameplay. Interrupting the app releases every touch and pauses solo play. Resume by tapping the pause panel.
 
@@ -55,6 +55,18 @@ Using the controller hides the large touch controls. Touch the screen to bring t
 ## Build
 
 Open `DoodleShooter.xcodeproj` in Xcode 26 or later. Select the **DoodleShooter** scheme and your iPhone or iPad, select your Apple development team under Signing & Capabilities, then Run. The deployment target is iOS 17.0. No package downloads, web hosting, or CocoaPods are required.
+
+For subsequent builds from the repository root:
+
+```
+npm run ios:signing  # Check actual signing access without rebuilding
+npm run ios:build    # Check signing and build
+npm run ios:device   # Check signing, build, install and launch
+```
+
+The build helper uses the project's development team, checks a real signing operation before building, and unlocks the signing keychain through standard macOS authentication when needed. If signing reports a stale-session access error, it refreshes that keychain once and retries. It keeps the Mac awake for the build and writes the build log to `ios/build/automation/device-build.log`. It does not save passwords, export private keys, change trusted applications, or change keychain timeout settings. macOS may still require authentication after logout or restart; complete its normal prompt if shown. See [Apple's signing-error guidance](https://developer.apple.com/forums/thread/712005).
+
+With exactly one connected iPhone/iPad, installation selects it automatically. Otherwise run `npm run ios:device -- --device DEVICE_ID` using the identifier from `xcrun devicectl list devices`. `DOODLE_KEYCHAIN` can select a signing keychain other than the default login keychain. Initial certificate/account setup still happens in Xcode.
 
 The checked-in project references `../src`, `../vendor`, `../index.html`, `../style.css`, and `../mobile.css` directly, so web changes are included on the next build without a copy step. Keep the entire repository together.
 

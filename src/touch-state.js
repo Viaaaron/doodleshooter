@@ -28,6 +28,7 @@ export class TouchState {
     else if (kind === 'aimStick') this.aimStickId = id;
     else if (kind === 'weaponMeter') this.meterId = id;
     else if (kind === 'gesture') this.gestureId = id;
+    else if (kind === 'guard') { /* A missed control must not become a screen gesture. */ }
     else if (kind === 'aim') this.aim = !this.aim;
     else { this.held.set(kind, (this.held.get(kind) || 0) + 1); this.pulses.add(kind); }
     return true;
@@ -42,10 +43,7 @@ export class TouchState {
       const dx = x - p.originX, dy = y - p.originY;
       p.distance = Math.max(p.distance, Math.hypot(dx, dy));
       if (p.mode === 'pending' && p.distance > 12) {
-        p.mode = dy > Math.abs(dx) * 1.25 ? 'down' : 'look';
-        if (p.mode === 'look') { this.look.x += dx; this.look.y += dy; }
-      } else if (p.mode === 'look') {
-        this.look.x += x - p.x; this.look.y += y - p.y;
+        p.mode = dy > Math.abs(dx) * 1.25 ? 'down' : 'ignored';
       }
       if (p.mode === 'down' && dy >= 36 && dy > Math.abs(dx) * 1.25) {
         p.mode = 'slide'; this.pulses.add('touchSlide'); this.slideUntil = this.now() + 800;
@@ -54,7 +52,7 @@ export class TouchState {
     }
     if (p.kind === 'move' || p.kind === 'aimStick') {
       const dx = (x - p.originX) / p.radius, dy = (y - p.originY) / p.radius;
-      const deadzone = p.kind === 'aimStick' ? 0.06 : 0.12;
+      const deadzone = p.kind === 'aimStick' ? 0.10 : 0.12;
       const length = Math.hypot(dx, dy), travel = Math.max(0, (Math.min(length, 1) - deadzone) / (1 - deadzone));
       // Tune response near the center while keeping full travel at full speed.
       const magnitude = p.kind === 'move' ? Math.pow(travel, 1 / this.moveSensitivity) : travel;
@@ -90,7 +88,7 @@ export class TouchState {
         } else if (p.distance <= 12 && p.slot !== null) this.queuedWeapon = p.slot;
       }
     }
-    else if (p.kind !== 'aim') {
+    else if (p.kind !== 'aim' && p.kind !== 'guard') {
       const count = (this.held.get(p.kind) || 1) - 1;
       if (count) this.held.set(p.kind, count); else this.held.delete(p.kind);
       if (cancelled) this.pulses.delete(p.kind);

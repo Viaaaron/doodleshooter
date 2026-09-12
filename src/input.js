@@ -1,6 +1,7 @@
 // Unified keyboard/mouse + gamepad (PS5 DualSense / standard mapping) input.
 import { clamp } from './util.js';
 import { hasTouch, TouchControls } from './touch.js';
+import { TouchAim } from './touch-aim.js';
 import { ControllerState, CONTROLLER_STORAGE_KEY } from './controller-state.js';
 
 const KEYMAP = {
@@ -30,6 +31,7 @@ export class Input {
     this.controller = new ControllerState(savedController);
     this.onControllerDisconnect = null;
     this.touchEnabled = hasTouch(); this.touchSens = 0.0045;
+    this.touchAim = new TouchAim();
     this.touch = this.touchEnabled ? new TouchControls(this) : null;
     window.addEventListener('doodle-controller', e => this.controller.receiveNative(e.detail));
     window.addEventListener('pointerdown', () => this.setGamepadMode(false));
@@ -79,6 +81,7 @@ export class Input {
   clearActions() {
     this.state = {}; this.padState = {}; this.move = { x: 0, y: 0 }; this.look = { x: 0, y: 0 };
     this.pendingActions.clear();
+    this.touchAim.reset();
   }
   queueAction(action) { this.pendingActions.add(action); this.lastActive = performance.now(); }
 
@@ -121,11 +124,8 @@ export class Input {
     let lx = -this.mx * this.mouseSens, ly = -this.my * this.mouseSens; this.mx = 0; this.my = 0;
     if (touch) {
       lx -= touch.look.x * this.touchSens; ly -= touch.look.y * this.touchSens;
-      // A held virtual stick turns continuously, independent of frame rate.
-      const length = Math.hypot(touch.lookStick.x, touch.lookStick.y);
-      const curve = Math.pow(length, 0.65), sensitivity = this.touchSens / 0.0045;
-      lx -= touch.lookStick.x * curve * 3.4 * sensitivity * dt;
-      ly -= touch.lookStick.y * curve * 2.6 * sensitivity * dt;
+      const aim = this.touchAim.step(touch.lookStick, dt, this.touchSens / 0.0045);
+      lx -= aim.x; ly -= aim.y;
     }
 
     const pad = this._getPad();

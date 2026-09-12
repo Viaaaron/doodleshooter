@@ -35,7 +35,8 @@ html, body { touch-action: manipulation; }
 .stick-ring { position: relative; width: 126px; height: 126px; border: 2px solid rgba(26,48,192,.5); border-radius: 50%; background: rgba(250,248,238,.25); box-shadow: inset 0 0 0 12px rgba(26,48,192,.04); display: grid; place-items: center; }
 .stick-knob { display: block; width: 54px; height: 54px; border-radius: 50%; border: 2px solid var(--ink); background: rgba(250,248,238,.85); box-shadow: 2px 3px 0 rgba(26,48,192,.18); }
 .stick-caption { margin-top: 10px; font: 10px -apple-system, sans-serif; letter-spacing: .7px; }
-.touch-actions { --aim-diameter: 140px; position: absolute; width: 214px; height: 238px; right: max(24px, env(safe-area-inset-right)); bottom: max(20px, env(safe-area-inset-bottom)); }
+.touch-actions { --aim-diameter: 140px; position: absolute; width: 214px; height: 238px; right: max(24px, env(safe-area-inset-right)); bottom: max(20px, env(safe-area-inset-bottom)); pointer-events: auto; touch-action: none; }
+.touch-actions::before { content: ''; position: absolute; inset: -12px -24px -20px -8px; }
 .touch-aim-row { position: absolute; right: 0; bottom: 0; display: flex; align-items: flex-start; gap: 10px; }
 .touch-aim-stick { position: relative; left: auto; right: auto; bottom: auto; width: 160px; height: auto; justify-content: flex-start; }
 .touch-aim-stick .stick-ring { box-sizing: border-box; width: var(--aim-diameter); height: var(--aim-diameter); }
@@ -45,6 +46,7 @@ html, body { touch-action: manipulation; }
 .touch-aim-stick.held .stick-knob { background: var(--ink); color: var(--paper); }
 .touch-aim-stick .stick-caption { font-size: 9px; line-height: 11px; letter-spacing: 1.2px; }
 #touch-controls .touch-fire { position: relative; flex: none; box-sizing: border-box; min-width: 44px; width: 44px; height: var(--aim-diameter); padding: 0; border-color: var(--red); color: var(--red); border-radius: 22px; background: rgba(250,238,230,.88); }
+#touch-controls .touch-fire::before { content: ''; position: absolute; inset: -14px -18px -14px -8px; border-radius: 25px; }
 .fire-label { writing-mode: vertical-rl; font: 700 11px/1 -apple-system, sans-serif; letter-spacing: 2px; }
 #touch-controls .touch-fire.held { background: var(--red); color: var(--paper); transform: none; }
 .touch-aim { right: 0; bottom: 187px; width: 68px; }
