@@ -133,8 +133,14 @@ export class Player {
     const wish = _v.set(0, 0, 0).addScaledVector(_fwd, mv.y).addScaledVector(_right, mv.x); let wishLen = wish.length(); if (wishLen > 1e-4) wish.divideScalar(wishLen); wishLen = Math.min(1, wishLen);
     if (inp.usingGamepad) { if (inp.pressed('sprint')) this.sprintToggle = !this.sprintToggle; if (mv.y < 0.1) this.sprintToggle = false; } else this.sprintToggle = inp.down('sprint');
     const aiming = this._aiming = inp.down('aim') && this.weapon.isGun;
-    const hspeed = Math.hypot(b.vel.x, b.vel.z);
+    let hspeed = Math.hypot(b.vel.x, b.vel.z);
     const crouchDown = inp.down('crouch');
+    // A downward touch swipe launches a short slide, even from a standstill.
+    if (inp.pressed('touchSlide') && b.onGround && !this.sliding) {
+      if (hspeed < 6.4) { const dir = wishLen > 0 ? wish : _fwd; b.vel.x = dir.x * 6.4; b.vel.z = dir.z * 6.4; hspeed = 6.4; }
+      this._startSlide(hspeed);
+      hspeed = Math.hypot(b.vel.x, b.vel.z);
+    }
     if (inp.pressed('crouch') && b.onGround && hspeed > 6.3 && !this.sliding) this._startSlide(hspeed);
     if (this.sliding) { this.slideT += dt; if (!crouchDown || hspeed < 3.5 || this.airT > 0.35) this.sliding = false; }
     let wantCrouch = (crouchDown && b.onGround) || this.sliding;
@@ -183,7 +189,7 @@ export class Player {
         this.ctx.effects.strokeBurst(_v2, INK.BLUE, 9, 4.5, { life: 0.28, size: 0.028, gravity: -2 });
       }
     }
-    if ((inp.pressed('dash') || (inp.pressed('crouch') && !b.onGround)) && !b.onGround && this.dashCd <= 0 && this.grapple.state !== 'on') this._dash(wishLen > 0 ? wish : _fwd);
+    if ((inp.pressed('dash') || inp.pressed('touchSlide') || (inp.pressed('crouch') && !b.onGround)) && !b.onGround && this.dashCd <= 0 && this.grapple.state !== 'on') this._dash(wishLen > 0 ? wish : _fwd);
     // ---- gravity, grapple, mantle, integrate ----
     b.vel.y -= G * this.gravityScale * (this.grapple.state === 'on' ? 0.88 : 1) * dt;
     this._updateGrapple(dt);

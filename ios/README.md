@@ -8,7 +8,9 @@ Hold the phone in landscape. Tap **PLAY SOLO**.
 
 - Left analog stick: move; push fully forward to sprint.
 - Right analog stick: hold to fire and drag to aim. Holding off-center keeps turning; lift your thumb to stop both. Small movements aim precisely, larger movements turn faster. Shotgun and sniper shots repeat at their normal firing rates while held.
-- Swipe the open screen: look around without firing.
+- Tap open space: jump; tap again for a double jump.
+- Swipe down on open space: a short ground slide, or an air dash. The slide continues after you lift your finger, then ends automatically.
+- Swipe sideways or up on open space: look around without firing. Downward swipes keep the camera steady.
 - AIM: tap to toggle aiming. The sniper uses its original scope; the katana blocks.
 - Weapon wheel: the filled icon is equipped, the red icon is next. Tap **NEXT** to cycle rifle → shotgun → sniper → katana → rifle, or tap any weapon icon to equip it directly.
 - JUMP: jump, double jump, or wall jump.
@@ -64,7 +66,7 @@ xcodebuild -project ios/DoodleShooter.xcodeproj -scheme DoodleShooter \
   CODE_SIGNING_ALLOWED=NO test
 ```
 
-The JavaScript tests cover simultaneous fingers, analog deadzones and normalization, fire-and-look, short taps, aim toggling, cancellation, native/browser controller priority, remapping, saved configuration, disconnects, stick swapping and held-button suppression. XCTest checks controller mapping persistence, fixed page scale after double taps, and the original touch gameplay flow. Physical controller testing still requires a connected controller.
+The JavaScript tests cover simultaneous fingers, analog deadzones and normalization, fire-and-look, tap-to-jump, swipe-to-slide, gesture cancellation, aim toggling, native/browser controller priority, remapping, saved configuration, disconnects, stick swapping and held-button suppression. XCTest checks controller mapping persistence, fixed page scale after double taps, and touch gameplay. Physical controller testing still requires a connected controller. For a desktop gesture check, run `npm run dev` and open `/tests/touch-gestures.html`: it uses the real controls and player physics with a visible jump/slide/dash counter and incoming damage disabled. This test scene is not bundled in the iOS app.
 
 The original mouse, keyboard and gamepad paths remain available when running the web version. `npm run dev` serves it on the Mac at `http://127.0.0.1:8910`.
 

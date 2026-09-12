@@ -14,7 +14,7 @@ export class TouchControls {
     this.input = input; this.state = new TouchState(); this.active = false;
     this.root = document.createElement('div'); this.root.id = 'touch-controls'; this.root.hidden = true;
     this.root.innerHTML = `
-      <div class="touch-look" aria-label="Drag to look"></div>
+      <div class="touch-look" role="group" aria-label="Tap to jump, swipe down to slide"></div>
       <div class="touch-stick touch-move" role="group" aria-label="Movement joystick"><div class="stick-ring"><span class="stick-knob"></span></div><span class="stick-caption">MOVE · PUSH TO SPRINT</span></div>
       <div class="touch-utilities">
         <button data-action="pause" aria-label="Pause">Ⅱ</button>
@@ -41,7 +41,7 @@ export class TouchControls {
     this.nextName = this.root.querySelector('.wheel-next-name');
     this.bind(this.root.querySelector('.touch-move'), 'move');
     this.bind(this.root.querySelector('.touch-fire-stick'), 'fireStick');
-    this.bind(this.root.querySelector('.touch-look'), 'look');
+    this.bind(this.root.querySelector('.touch-look'), 'gesture');
     for (const button of this.root.querySelectorAll('[data-action]')) this.bind(button, button.dataset.action);
     this.root.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); });
     for (const event of ['blur', 'pagehide', 'resize']) window.addEventListener(event, () => this.reset());
@@ -62,7 +62,9 @@ export class TouchControls {
     });
     const end = e => {
       if (!this.state.pointers.has(e.pointerId)) return;
-      e.preventDefault(); this.state.end(e.pointerId, e.type !== 'pointerup');
+      e.preventDefault();
+      if (e.type === 'pointerup') this.state.drag(e.pointerId, e.clientX, e.clientY);
+      this.state.end(e.pointerId, e.type !== 'pointerup');
       if (![...this.state.pointers.values()].some(p => p.kind === kind)) element.classList.remove('held');
       this.paint();
     };

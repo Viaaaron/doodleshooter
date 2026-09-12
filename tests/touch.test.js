@@ -89,3 +89,64 @@ test('swiping open space never fires and weapon wheel taps retain their selected
   assert.deepEqual(frame.look, { x: 25, y: -10 }); assert.equal(frame.buttons.fire, undefined);
   assert.equal(frame.buttons.slot3, true); assert.equal(t.sample().buttons.slot3, undefined);
 });
+
+test('an open-screen tap jumps on release, with a little finger drift allowed', () => {
+  let now = 0; const t = new TouchState(() => now);
+  t.start(1, 'gesture', 100, 100); assert.equal(t.sample().buttons.jump, undefined);
+  now = 90; t.drag(1, 106, 103); t.end(1);
+  assert.equal(t.sample().buttons.jump, true); assert.equal(t.sample().buttons.jump, undefined);
+  now = 180; t.start(2, 'gesture', 100, 100); now = 240; t.end(2);
+  assert.equal(t.sample().buttons.jump, true, 'A second tap is a separate jump');
+});
+
+test('two taps between frames produce two separate jump presses', () => {
+  const t = new TouchState(() => 0);
+  t.start(1, 'gesture', 0, 0); t.end(1);
+  t.start(2, 'gesture', 0, 0); t.end(2);
+  assert.equal(t.sample().buttons.jump, true);
+  assert.equal(t.sample().buttons.jump, undefined, 'There must be a released frame between jump presses');
+  assert.equal(t.sample().buttons.jump, true);
+  assert.equal(t.sample().buttons.jump, undefined);
+});
+
+test('a downward swipe slides once, leaves the camera steady and outlasts finger release', () => {
+  let now = 0; const t = new TouchState(() => now);
+  t.start(1, 'gesture', 200, 100); t.drag(1, 202, 117);
+  assert.deepEqual(t.sample().look, { x: 0, y: 0 });
+  now = 50; t.drag(1, 204, 150);
+  const frame = t.sample();
+  assert.equal(frame.buttons.touchSlide, true); assert.equal(frame.buttons.crouch, true);
+  assert.equal(frame.buttons.jump, undefined); assert.deepEqual(frame.look, { x: 0, y: 0 });
+  t.drag(1, 205, 200); t.end(1);
+  now = 500;
+  assert.equal(t.sample().buttons.crouch, true); assert.equal(t.sample().buttons.touchSlide, undefined);
+  now = 851; assert.equal(t.sample().buttons.crouch, undefined);
+});
+
+test('sideways and upward swipes look without jumping or sliding', () => {
+  const t = new TouchState();
+  for (const [x, y] of [[40, 6], [2, -45]]) {
+    t.start(1, 'gesture', 0, 0); t.drag(1, x, y); t.end(1);
+    const frame = t.sample(); assert.deepEqual(frame.look, { x, y });
+    assert.deepEqual(frame.buttons, {});
+  }
+});
+
+test('long holds, out-and-back drags, cancellations and resets never become accidental gestures', () => {
+  let now = 0; const t = new TouchState(() => now);
+  t.start(1, 'gesture', 0, 0); now = 500; t.end(1); assert.deepEqual(t.sample().buttons, {});
+  t.start(2, 'gesture', 0, 0); t.drag(2, 20, 0); t.drag(2, 0, 0); t.end(2); assert.deepEqual(t.sample().buttons, {});
+  t.start(3, 'gesture', 0, 0); t.end(3, true); assert.deepEqual(t.sample().buttons, {});
+  t.start(4, 'gesture', 0, 0); t.drag(4, 0, 50); t.end(4, true); assert.deepEqual(t.sample().buttons, {});
+  t.start(5, 'gesture', 0, 0); t.drag(5, 0, 50); t.reset(); assert.deepEqual(t.sample().buttons, {});
+});
+
+test('gestures work alongside both sticks; touching controls cannot jump or slide', () => {
+  const t = new TouchState();
+  t.start(1, 'move', 0, 0, 50); t.drag(1, 0, -50);
+  t.start(2, 'fireStick', 0, 0, 50); t.drag(2, 20, 40);
+  t.start(3, 'gesture', 200, 100); t.end(3);
+  const frame = t.sample(); assert.equal(frame.buttons.jump, true); assert.equal(frame.buttons.fire, true); assert.equal(frame.move.y, 1);
+  t.end(1); t.end(2); t.start(4, 'slot2', 0, 0); t.drag(4, 0, 80); t.end(4);
+  assert.deepEqual(t.sample().buttons, { slot2: true });
+});

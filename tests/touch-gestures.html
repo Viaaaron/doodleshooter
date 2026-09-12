@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <base href="../">
+  <title>Touch gesture integration test</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="mobile.css">
+  <script type="importmap">{"imports":{"three":"./vendor/three/three.module.js","three/addons/":"./vendor/three/addons/"}}</script>
+  <script>Object.defineProperty(navigator, 'maxTouchPoints', { value: 5 });</script>
+  <style>#gesture-test-readout { position: fixed; z-index: 60; top: 4px; left: 24%; margin: 0; padding: 4px; background: #fff; color: #111; font: 10px/1.2 monospace; pointer-events: none; }</style>
+</head>
+<body>
+  <canvas id="c"></canvas><div id="hud"></div>
+  <pre id="gesture-test-readout" aria-label="Gesture test results">Loading test scene…</pre>
+  <script src="vendor/peerjs/peerjs.min.js"></script>
+  <script type="module">
+    // Development-only scene: real input, player physics and controls; no incoming damage.
+    // This tests directory is not included in the iOS application bundle.
+    import './src/main.js';
+    const { player, input, game } = window.__game;
+    player.takeDamage = () => {};
+    let jumps = 0, slides = 0, dashes = 0, wasSliding = false, lastDash = 0, pitchAtSwipe = 0, swipePitchChange = 0;
+    function inspect() {
+      if (game.state === 'play') {
+        if (input.pressed('jump') && player.body.vel.y > 0) jumps++;
+        if (player.sliding && !wasSliding) slides++;
+        if (player.dashCd > lastDash + 0.2) dashes++;
+        if (input.pressed('touchSlide')) { pitchAtSwipe = player.pitch; swipePitchChange = input.look.y; }
+        wasSliding = player.sliding; lastDash = player.dashCd;
+      }
+      document.querySelector('#gesture-test-readout').textContent = `TEST SCENE · damage disabled\nJumps: ${jumps} · Slides: ${slides} · Dashes: ${dashes}\nSliding: ${player.sliding} · Crouching: ${player.crouching}\nSwipe look delta: ${swipePitchChange.toFixed(3)} · Pitch: ${(player.pitch - pitchAtSwipe).toFixed(3)}`;
+      requestAnimationFrame(inspect);
+    }
+    requestAnimationFrame(inspect);
+  </script>
+</body>
+</html>

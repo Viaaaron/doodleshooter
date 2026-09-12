@@ -595,7 +595,7 @@ function friendlyError(err) {
 function setStatus(t) { lobby.status = t; const el = hud.el.panel.querySelector('#status'); if (el) el.textContent = t; }
 
 // ---------------- screens ----------------
-function controlsHTML() { return input.touchEnabled ? '<p class="mobile-help">Left stick moves; push forward to sprint. Hold the right stick to fire and drag it to aim. Lift to stop firing. Swipe open space to look without shooting. Tap AIM to zoom. The weapon wheel shows what’s next; tap a gun to equip it.</p>' : CONTROLS_HTML; }
+function controlsHTML() { return input.touchEnabled ? '<p class="mobile-help">Tap open space to jump. Swipe down to slide, or dash in the air. Left stick moves; right stick aims and fires while held. Swipe sideways or up to look without firing. Tap AIM to zoom; tap a weapon on the wheel to equip it.</p>' : CONTROLS_HTML; }
 function settingsHTML() {
   return `<div class="settings" id="settings">
     <button type="button" id="controllerSettingsBtn">Controller settings</button>
