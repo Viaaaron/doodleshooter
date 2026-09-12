@@ -12,7 +12,7 @@ Hold the phone in landscape. Tap **PLAY SOLO**.
 - Swipe down on open space: a short ground slide, or an air dash. The slide continues after you lift your finger, then ends automatically.
 - Swipe sideways or up on open space: look around without firing. Downward swipes keep the camera steady.
 - AIM: tap to toggle aiming. The sniper uses its original scope; the katana blocks.
-- Weapon wheel: the filled icon is equipped, the red icon is next. Tap **NEXT** to cycle rifle → shotgun → sniper → katana → rifle, or tap any weapon icon to equip it directly.
+- Weapon wheel: one circle with four weapon icons. Tap any quarter to equip it; the filled quarter is your current weapon. Clockwise from the upper left: rifle → shotgun → sniper → katana.
 - JUMP: jump, double jump, or wall jump.
 - SLIDE: slide on the ground or dash in the air.
 - HOOK: grapple; hold to reel in; tap again to detach.

@@ -23,9 +23,7 @@ export class TouchControls {
         <button data-action="melee" aria-label="Quick slash">SLASH</button>
       </div>
       <div class="touch-wheel" role="group" aria-label="Weapon wheel">
-        <svg class="wheel-track" viewBox="0 0 232 112" aria-hidden="true"><path d="M24 68Q116 -44 208 68"/><path d="m202 59 7 10-12-1"/></svg>
         <div class="wheel-slots"></div>
-        <button class="touch-switch" data-action="nextWeapon" aria-label="Switch weapon"><span>NEXT →</span><strong class="wheel-next-name">Shotgun</strong></button>
       </div>
       <div class="touch-actions">
         <button class="touch-reload" data-action="reload" aria-label="Reload">RELOAD</button>
@@ -38,7 +36,6 @@ export class TouchControls {
     document.body.append(this.root); document.body.classList.add('mobile-controls');
     this.knob = this.root.querySelector('.touch-move .stick-knob'); this.aimButton = this.root.querySelector('.touch-aim');
     this.fireKnob = this.root.querySelector('.touch-fire-stick .stick-knob');
-    this.nextName = this.root.querySelector('.wheel-next-name');
     this.bind(this.root.querySelector('.touch-move'), 'move');
     this.bind(this.root.querySelector('.touch-fire-stick'), 'fireStick');
     this.bind(this.root.querySelector('.touch-look'), 'gesture');
@@ -85,11 +82,10 @@ export class TouchControls {
       const slots = this.root.querySelector('.wheel-slots'); slots.replaceChildren();
       this.weaponButtons = weapons.map((weapon, i) => {
         const button = document.createElement('button'); button.className = 'wheel-weapon';
-        const angle = Math.PI * (1 - i / Math.max(1, weapons.length - 1));
-        button.style.left = `calc(${(116 + Math.cos(angle) * 92) / 232 * 100}% - 24px)`;
-        button.style.top = `${64 - Math.sin(angle) * 49 - 22}px`;
-        button.innerHTML = `${weaponIcon(weapon.kind)}<span></span><small class="wheel-marker"></small>`;
-        button.querySelector('span').textContent = weapon.name;
+        // Clockwise order: rifle, shotgun, sniper, katana.
+        button.style.gridArea = ['1 / 1', '1 / 2', '2 / 2', '2 / 1'][i];
+        button.innerHTML = weaponIcon(weapon.kind);
+        button.title = weapon.name;
         this.bind(button, 'slot' + (i + 1)); slots.append(button); return button;
       });
     }
@@ -99,14 +95,11 @@ export class TouchControls {
     const next = (selected + 1) % weapons.length;
     this.weaponButtons.forEach((button, i) => {
       const current = i === selected, upcoming = i === next;
-      button.classList.toggle('current', current); button.classList.toggle('next', upcoming);
+      button.classList.toggle('current', current);
       button.classList.toggle('empty', !!(weapons[i].isGun && !weapons[i].mag && !weapons[i].reserve));
       button.setAttribute('aria-current', String(current));
       button.setAttribute('aria-label', `Equip ${weapons[i].name}${current ? ', equipped' : upcoming ? ', next' : ''}`);
-      button.querySelector('.wheel-marker').textContent = current ? 'IN HAND' : upcoming ? 'NEXT' : '';
     });
-    this.nextName.textContent = weapons[next].name;
-    this.root.querySelector('.touch-switch').setAttribute('aria-description', `Next weapon: ${weapons[next].name}`);
     const melee = !weapons[selected].isGun;
     this.root.querySelector('.fire-label').textContent = melee ? 'SLASH' : 'FIRE';
     this.root.querySelector('.touch-fire-stick .stick-caption').textContent = melee ? 'DRAG TO LOOK · HOLD TO SLASH' : 'DRAG TO AIM · HOLD TO FIRE';

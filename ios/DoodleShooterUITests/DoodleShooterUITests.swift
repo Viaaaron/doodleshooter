@@ -14,7 +14,7 @@ final class DoodleShooterUITests: XCTestCase {
         XCTAssertTrue(app.webViews.buttons["Equip Rifle, equipped"].exists)
         XCTAssertTrue(app.webViews.buttons["Equip Shotgun, next"].exists)
         for (name, next) in [("Shotgun", "Sniper"), ("Sniper", "Katana"), ("Katana", "Rifle"), ("Rifle", "Shotgun")] {
-            app.webViews.buttons["Switch weapon"].tap()
+            app.webViews.buttons["Equip \(name), next"].tap()
             XCTAssertTrue(app.webViews.buttons["Equip \(name), equipped"].waitForExistence(timeout: 3))
             XCTAssertTrue(app.webViews.buttons["Equip \(next), next"].exists)
         }
@@ -83,7 +83,7 @@ final class DoodleShooterUITests: XCTestCase {
         assertFrame(of: fire, matches: fireFrame)
         app.switches["Toggle aim"].tap()
         assertFrame(of: fire, matches: fireFrame)
-        app.webViews.buttons["Switch weapon"].tap()
+        app.webViews.buttons["Equip Shotgun, next"].tap()
         XCTAssertTrue(app.webViews.buttons["Equip Shotgun, equipped"].waitForExistence(timeout: 3))
     }
 
@@ -99,7 +99,7 @@ final class DoodleShooterUITests: XCTestCase {
         XCTAssertTrue(fire.waitForExistence(timeout: 10))
         fire.press(forDuration: 0.3)
         app.switches["Toggle aim"].tap()
-        app.webViews.buttons["Switch weapon"].tap()
+        app.webViews.buttons["Equip Shotgun, next"].tap()
         XCTAssertTrue(app.webViews.buttons["Equip Shotgun, equipped"].waitForExistence(timeout: 3))
         app.webViews.buttons["Jump"].tap()
         app.webViews.buttons["Reload"].tap()
