@@ -1,9 +1,9 @@
 import { TouchState } from './touch-state.js';
 
 const WEAPON_ICONS = {
-  rifle: '<path d="M3 10h8l3-3h17v3h10v3H24l-3 4-5-1-2-3H8l-5 4zM20 13l-2 8h5l2-8M28 7V4h5v3"/>',
-  shotgun: '<path d="M3 16l9-6h29v4H20l-4 3-5-1-5 5zM22 14v4h10v-4M13 10l-1-3h5l2 3"/>',
-  sniper: '<path d="M3 14l9-5h17v3h13M23 12l-3 8h4l3-8M15 9V5h14v4M17 5V3h10v2M34 12l-3 8m3-8 4 8"/>',
+  rifle: '<path d="M8 11l3-5 3 5v13H8zM19 8l3-6 3 6v16h-6zM30 11l3-5 3 5v13h-6zM8 20h6m5 0h6m5 0h6"/>',
+  shotgun: '<path d="M16 4h12v17H16zM14 21h16v4H14zM16 8h12M20 11v6m4-6v6"/>',
+  sniper: '<path d="M19 10c0-4 3-9 3-9s3 5 3 9v4l2 3v8H17v-8l2-3zM19 14h6M17 22h10"/>',
   katana: '<path d="M13 18L36 3c-3 8-13 14-20 17M12 16l7 8M13 19l-7 6-3-3 8-6M6 20l3 3"/>',
 };
 const weaponIcon = kind => `<svg viewBox="0 0 44 28" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${WEAPON_ICONS[kind] || WEAPON_ICONS.rifle}</svg>`;
@@ -22,16 +22,15 @@ export class TouchControls {
         <button data-action="grenade" aria-label="Throw grenade">GRENADE</button>
         <button data-action="melee" aria-label="Quick slash">SLASH</button>
       </div>
-      <div class="touch-meter" role="group" aria-label="Weapon meter, flick up or down">
-        <svg class="meter-track" viewBox="0 0 96 192" aria-hidden="true"><g class="meter-outlines"></g><g class="meter-segments"></g><line class="meter-needle" x1="83" y1="96" x2="47" y2="38"/><circle cx="83" cy="96" r="4"/></svg>
-        <div class="meter-slots"></div>
-        <span class="meter-caption">↕ GUNS</span>
-      </div>
       <div class="touch-actions">
         <button class="touch-reload" data-action="reload" aria-label="Reload">RELOAD</button>
         <button class="touch-hook" data-action="grapple" aria-label="Grapple">HOOK</button>
         <button class="touch-aim" data-action="aim" aria-label="Toggle aim" aria-pressed="false">AIM</button>
         <div class="touch-aim-row">
+          <div class="touch-meter" role="group" aria-label="Weapon meter, flick up or down">
+            <svg class="meter-track" viewBox="0 0 76 140" aria-hidden="true"><g class="meter-outlines"></g><g class="meter-segments"></g><line class="meter-needle" x1="62" y1="70" x2="51" y2="37"/><circle cx="62" cy="70" r="3"/></svg>
+            <div class="meter-slots"></div>
+          </div>
           <div class="touch-stick touch-aim-stick" role="group" aria-label="Aim joystick"><div class="stick-ring"><span class="stick-knob"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="7"/><path d="M16 3v7m0 12v7M3 16h7m12 0h7"/></svg></span></div><span class="stick-caption">LOOK</span></div>
           <button class="touch-fire" data-action="fire" aria-label="Fire"><span class="fire-label">FIRE</span></button>
         </div>
@@ -94,16 +93,17 @@ export class TouchControls {
       const outlines = this.root.querySelector('.meter-outlines'); outlines.replaceChildren();
       this.weaponSegments = []; this.weaponCenters = [];
       this.weaponButtons = weapons.map((weapon, i) => {
-        const point = angle => ({ x: 83 - 66 * Math.cos(angle), y: 96 + 80 * Math.sin(angle) });
+        const point = angle => ({ x: 62 - 44 * Math.cos(angle), y: 70 + 55 * Math.sin(angle) });
         const start = -Math.PI / 2 + i * Math.PI / weapons.length + 0.035;
         const end = -Math.PI / 2 + (i + 1) * Math.PI / weapons.length - 0.035;
         const from = point(start), to = point(end), center = point((start + end) / 2);
         const segment = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        segment.setAttribute('d', `M${from.x},${from.y} A66,80 0 0,0 ${to.x},${to.y}`);
+        segment.setAttribute('d', `M${from.x},${from.y} A44,55 0 0,0 ${to.x},${to.y}`);
         outlines.append(segment.cloneNode());
         segments.append(segment); this.weaponSegments.push(segment); this.weaponCenters.push(center);
         const button = document.createElement('button'); button.className = 'meter-weapon';
-        button.style.left = `${center.x - 22}px`; button.style.top = `${i * 46 + 4}px`;
+        button.style.left = `${center.x - 20}px`;
+        button.style.top = `${i * 100 / weapons.length}%`; button.style.height = `${100 / weapons.length}%`;
         button.dataset.weaponSlot = i;
         button.innerHTML = weaponIcon(weapon.kind);
         button.title = weapon.name;
@@ -123,7 +123,7 @@ export class TouchControls {
       button.setAttribute('aria-label', `Equip ${weapons[i].name}${current ? ', equipped' : upcoming ? ', next' : ''}`);
     });
     const center = this.weaponCenters[selected], needle = this.root.querySelector('.meter-needle');
-    needle.setAttribute('x2', String(83 + (center.x - 83) * 0.65)); needle.setAttribute('y2', String(96 + (center.y - 96) * 0.65));
+    needle.setAttribute('x2', String(62 + (center.x - 62) * 0.6)); needle.setAttribute('y2', String(70 + (center.y - 70) * 0.6));
     const melee = !weapons[selected].isGun;
     this.root.querySelector('.fire-label').textContent = melee ? 'SLASH' : 'FIRE';
   }

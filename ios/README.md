@@ -13,7 +13,7 @@ Hold the phone in landscape. Tap **PLAY SOLO**.
 - Swipe down on open space: a short ground slide, or an air dash. The slide continues after you lift your finger, then ends automatically.
 - Open-screen gestures never change your aim. Only taps to jump and downward swipes to slide or air dash trigger actions; other swipes are ignored.
 - AIM: tap to toggle aiming. The sniper uses its original scope; the katana blocks.
-- Weapon meter: four icons on a curved vertical gauge. Flick up for the next weapon, down for the previous one, or tap an icon to equip it. The filled segment and needle mark your current weapon. Top to bottom: rifle → shotgun → sniper → katana; flicking wraps at either end.
+- Weapon meter: a compact curved gauge, aligned with the right stick and matching its 140-point ring height. Top to bottom: three bullets (rifle), a shotgun shell, a long sniper cartridge, and the katana. Flick up for the next weapon, down for the previous one, or tap an icon to equip it. The filled segment and needle mark your current weapon; flicking wraps at either end.
 - Shake to reload: the iOS app recognizes a shake during play. A progress bar below the crosshair shows the reload, alongside the gun's reload animation. Reload requests wait for the shotgun pump or sniper bolt to finish cycling. Shakes in menus are ignored.
 - RELOAD: a button above the left stick provides the same action without shaking.
 - HOOK: grapple; hold to reel in; tap again to detach.

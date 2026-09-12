@@ -52,17 +52,17 @@ html, body { touch-action: manipulation; }
 .touch-aim { right: 0; bottom: 187px; width: 68px; }
 .touch-hook { right: 82px; bottom: 187px; width: 64px; }
 #touch-controls .touch-reload { position: fixed; left: max(22px, env(safe-area-inset-left)); top: 116px; width: 58px; height: 46px; font-size: 9px; }
-.touch-meter { position: absolute; right: calc(max(24px, env(safe-area-inset-right)) + 232px); bottom: max(31px, env(safe-area-inset-bottom)); width: 96px; height: 192px; pointer-events: auto; touch-action: none; }
+.touch-meter { position: relative; flex: none; width: 76px; height: var(--aim-diameter); pointer-events: auto; touch-action: none; }
 .meter-track { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; fill: var(--paper); stroke: var(--ink); stroke-width: 1.5; pointer-events: none; }
-.meter-outlines path { fill: none; stroke: rgba(26,48,192,.6); stroke-width: 34px; }
-.meter-segments path { fill: none; stroke: #edf0fa; stroke-width: 31px; }
+.meter-outlines path { fill: none; stroke: rgba(26,48,192,.6); stroke-width: 30px; }
+.meter-segments path { fill: none; stroke: #edf0fa; stroke-width: 27px; }
 .meter-segments path.current { stroke: var(--ink); }
 .meter-needle { stroke-width: 2; }
-#touch-controls .meter-weapon { min-width: 44px; width: 44px; height: 44px; padding: 4px; border: 0; border-radius: 50%; box-shadow: none; background: transparent; }
+.meter-slots { position: absolute; inset: 0; }
+#touch-controls .meter-weapon { min-width: 40px; width: 40px; padding: 0; border: 0; border-radius: 50%; box-shadow: none; background: transparent; }
 .meter-weapon svg { width: 33px; height: 24px; }
 #touch-controls .meter-weapon.current { color: var(--paper); }
 .meter-weapon.empty svg { opacity: .4; }
-.meter-caption { position: absolute; bottom: -12px; left: 29px; padding: 2px 4px; background: var(--paper); border-radius: 3px; font: 9px -apple-system, sans-serif; letter-spacing: .5px; pointer-events: none; }
 .reload-status[hidden] { display: none; }
 .reload-status { position: fixed; top: calc(50% + 38px); left: 50%; transform: translateX(-50%); z-index: 8; width: 148px; padding: 8px 12px; border-radius: 8px; background: rgba(250,248,238,.92); color: var(--ink); text-align: center; font: 700 12px -apple-system, sans-serif; pointer-events: none; }
 #reloadprogress { height: 5px; margin-top: 6px; border-radius: 4px; overflow: hidden; background: rgba(26,48,192,.15); }
