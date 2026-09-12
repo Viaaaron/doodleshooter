@@ -7,18 +7,21 @@ The Xcode app bundles the original [iifor/doodleshooter](https://github.com/iifo
 Hold the phone in landscape. Tap **PLAY SOLO**.
 
 - Left analog stick: move; push fully forward to sprint.
-- Right analog stick: hold to fire and drag to aim. Holding off-center keeps turning; lift your thumb to stop both. Small movements aim precisely, larger movements turn faster. Shotgun and sniper shots repeat at their normal firing rates while held.
+- Right analog stick: aim only. Holding off-center keeps turning; lift your thumb to stop. Small movements aim precisely, larger movements turn faster.
+- FIRE: hold the separate button above the left stick to shoot while aiming with your right thumb. Shotgun and sniper shots repeat at their normal firing rates while held.
 - Tap open space: jump; tap again for a double jump.
 - Swipe down on open space: a short ground slide, or an air dash. The slide continues after you lift your finger, then ends automatically.
 - Swipe sideways or up on open space: look around without firing. Downward swipes keep the camera steady.
 - AIM: tap to toggle aiming. The sniper uses its original scope; the katana blocks.
-- Weapon wheel: one circle with four weapon icons. Tap any quarter to equip it; the filled quarter is your current weapon. Clockwise from the upper left: rifle → shotgun → sniper → katana.
-- JUMP: jump, double jump, or wall jump.
-- SLIDE: slide on the ground or dash in the air.
+- Weapon meter: four icons on a curved vertical gauge. Flick up for the next weapon, down for the previous one, or tap an icon to equip it. The filled segment and needle mark your current weapon. Top to bottom: rifle → shotgun → sniper → katana; flicking wraps at either end.
+- Shake to reload: the iOS app recognizes a shake during play. A progress bar below the crosshair shows the reload, alongside the gun's reload animation. Reload requests wait for the shotgun pump or sniper bolt to finish cycling. Shakes in menus are ignored.
+- RELOAD: a button beside FIRE provides the same action without shaking.
 - HOOK: grapple; hold to reel in; tap again to detach.
-- RELOAD, GRENADE (hold to throw farther), SLASH, SCORE and pause retain the original actions.
+- GRENADE (hold to throw farther), SLASH, SCORE and pause retain the original actions.
 
 Look sensitivity, inverted look, music, best score and checkpoints are saved on the device. Interrupting the app releases every touch and pauses solo play. Resume by tapping the pause panel.
+
+The iPhone Action button and Ring/Silent switch are not exposed as ordinary gamepad press/release inputs. This app uses the touchscreen FIRE button or a controller trigger for shooting. Apple lets you [configure the Action button to run a Shortcut](https://support.apple.com/guide/shortcuts/run-shortcuts-with-the-action-button-apdfea15680b/ios), but this app does not map it to firing.
 
 ## Backbone and other iOS controllers
 
@@ -66,7 +69,7 @@ xcodebuild -project ios/DoodleShooter.xcodeproj -scheme DoodleShooter \
   CODE_SIGNING_ALLOWED=NO test
 ```
 
-The JavaScript tests cover simultaneous fingers, analog deadzones and normalization, fire-and-look, tap-to-jump, swipe-to-slide, gesture cancellation, aim toggling, native/browser controller priority, remapping, saved configuration, disconnects, stick swapping and held-button suppression. XCTest checks controller mapping persistence, fixed page scale after double taps, and touch gameplay. Physical controller testing still requires a connected controller. For a desktop gesture check, run `npm run dev` and open `/tests/touch-gestures.html`: it uses the real controls and player physics with a visible jump/slide/dash counter and incoming damage disabled. This test scene is not bundled in the iOS app.
+The JavaScript tests cover simultaneous fingers, analog deadzones and normalization, separate aim and fire, weapon meter flicks, tap-to-jump, swipe-to-slide, gesture cancellation, aim toggling, native/browser controller priority, remapping, saved configuration, disconnects, stick swapping and held-button suppression. XCTest checks controller mapping persistence, fixed page scale after double taps, weapon selection, aim without firing, and visible reload progress. Physical controller testing still requires a connected controller. For a desktop gesture check, run `npm run dev` and open `/tests/touch-gestures.html`: it uses the real controls and player physics with a visible jump/slide/dash counter and incoming damage disabled. This test scene is not bundled in the iOS app. In Simulator, fire a few shots, then choose **Device → Shake** to check the native reload gesture.
 
 The original mouse, keyboard and gamepad paths remain available when running the web version. `npm run dev` serves it on the Mac at `http://127.0.0.1:8910`.
 

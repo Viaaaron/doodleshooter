@@ -6,6 +6,22 @@ final class GameViewController: UIViewController, WKNavigationDelegate {
     private var server: LocalGameServer!
     private var controllers: ControllerBridge?
     private let loading = UILabel()
+    private var lastShake: TimeInterval = 0
+
+    override var canBecomeFirstResponder: Bool { true }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        becomeFirstResponder()
+    }
+
+    override func motionEnded(_ motion: UIEvent.EventSubtype, with event: UIEvent?) {
+        guard motion == .motionShake else { super.motionEnded(motion, with: event); return }
+        let now = ProcessInfo.processInfo.systemUptime
+        guard UIApplication.shared.applicationState == .active, now - lastShake > 0.8 else { return }
+        lastShake = now
+        webView?.evaluateJavaScript("window.dispatchEvent(new Event('doodle-reload'))", completionHandler: nil)
+    }
 
     override var prefersStatusBarHidden: Bool { true }
     override var prefersHomeIndicatorAutoHidden: Bool { true }

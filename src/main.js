@@ -595,7 +595,7 @@ function friendlyError(err) {
 function setStatus(t) { lobby.status = t; const el = hud.el.panel.querySelector('#status'); if (el) el.textContent = t; }
 
 // ---------------- screens ----------------
-function controlsHTML() { return input.touchEnabled ? '<p class="mobile-help">Tap open space to jump. Swipe down to slide, or dash in the air. Left stick moves; right stick aims and fires while held. Swipe sideways or up to look without firing. Tap AIM to zoom; tap a weapon on the wheel to equip it.</p>' : CONTROLS_HTML; }
+function controlsHTML() { return input.touchEnabled ? '<p class="mobile-help">Left stick moves; right stick looks. Hold FIRE to shoot. Tap open space to jump; swipe down to slide. Flick the gun meter up or down to switch weapons. Shake your iPhone to reload; watch the reload bar. AIM toggles zoom.</p>' : CONTROLS_HTML; }
 function settingsHTML() {
   return `<div class="settings" id="settings">
     <button type="button" id="controllerSettingsBtn">Controller settings</button>
@@ -776,6 +776,14 @@ const controllerUI = new ControllerSettings(input, {
 });
 Object.assign(window.__game, { controllerUI });
 window.addEventListener('doodle-pause', () => { input.touch?.setActive(false); input.controller.blockUntilRelease(); input.clearActions(); input.keys = {}; input.mouseBtns = {}; pause(); audio.ctx?.suspend(); });
+window.addEventListener('doodle-reload', () => {
+  if (game.state !== 'play' || game.menu || !player.alive) return;
+  const w = player.weapon;
+  if (!w.isGun) { hud.tip('Select a gun to reload', 1); return; }
+  if (w.mag >= w.magSize) { hud.tip('Magazine full', 1); return; }
+  if (!w.reserve) { hud.tip('No reserve ammo', 1); return; }
+  input.queueAction('reload');
+});
 window.addEventListener('blur', () => { if (input.touchEnabled) pause(); });
 document.addEventListener('visibilitychange', () => { if (document.hidden && input.touchEnabled) pause(); });
 window.addEventListener('pagehide', () => { if (net.active) net.leave(); });
@@ -840,6 +848,7 @@ function step(now) {
   for (const a of level.animated) a.update(game.time);
   audio.setListener(player.eye, player.right);
   const w = player.weapon; if (w.isGun) hud.setAmmo(w.mag, w.reserve, w.magSize, w.reloading); else hud.setKatana();
+  hud.setReload(w, playing && !game.menu);
   hud.setSlots(player.weapons.map((wp, i) => ({ name: wp.name, active: i === player.weaponIndex, ammo: wp.isGun ? wp.mag + '/' + wp.reserve : '∞', empty: wp.isGun && wp.mag === 0 && wp.reserve === 0 })));
   input.touch?.setWeapons(player.weapons, player.weaponIndex);
   hud.setGrenades(player.grenades); hud.setGrappleStamina(player.grapStam); hud.setHealth(player.hp, player.maxHp); hud.setSpread(w.spreadPx); hud.update(dt);

@@ -20,6 +20,7 @@ export class HUD {
       </div>
       <div class="hud-br"><div class="slots" id="slots"></div><div class="weapon" id="weapon">Rifle</div><div class="hint" id="hint"></div></div>
       <div class="tip" id="tip"></div>
+      <div class="reload-status" id="reloadstatus" hidden><span id="reloadlabel">RELOADING</span><div id="reloadprogress" role="progressbar" aria-label="Reload progress" aria-valuemin="0" aria-valuemax="100"><i></i></div></div>
       <div class="message"><div class="msg-main" id="msg"></div><div class="msg-sub" id="msgsub"></div></div>
       <div class="killfeed" id="killfeed"></div>
       <div class="screen" id="screen"><div class="panel" id="panel"></div></div>`;
@@ -59,6 +60,19 @@ export class HUD {
     if (mag !== this._lastTally) this.el.mag.setAttribute('aria-label', `Ammo: ${mag}`);
     this.el.mag.textContent = mag; this.el.reserve.textContent = '/' + reserve; this.el.reloading.textContent = reloading ? ' Reloading…' : '';
     if (mag !== this._lastTally) { this._lastTally = mag; let s = ''; for (let i = 0; i < Math.min(mag, 40); i++) s += '<i></i>'; this.el.tally.innerHTML = s; }
+  }
+  setReload(weapon, visible) {
+    const status = this.root.querySelector('#reloadstatus');
+    const active = visible && weapon.isGun && (weapon.reloading || weapon.reloadRequested);
+    status.hidden = !active;
+    if (!active) return;
+    const fraction = weapon.reloading ? Math.min(1, weapon.reloadT / weapon.reloadDur) : 0;
+    const progress = weapon.reloadType === 'shells' && weapon.reloading
+      ? (weapon.mag - weapon.reloadStartMag + fraction) / Math.max(1, weapon.reloadTargetMag - weapon.reloadStartMag) : fraction;
+    const percent = Math.round(Math.max(0, Math.min(1, progress)) * 100);
+    this.root.querySelector('#reloadlabel').textContent = weapon.reloadRequested ? 'RELOAD QUEUED' : 'RELOADING';
+    const bar = this.root.querySelector('#reloadprogress');
+    bar.setAttribute('aria-valuenow', String(percent)); bar.firstElementChild.style.width = percent + '%';
   }
   setKatana() { this.el.mag.setAttribute('aria-label', 'Unlimited'); this.el.mag.textContent = '∞'; this.el.reserve.textContent = ''; this.el.reloading.textContent = ''; if (this._lastTally !== -1) { this.el.tally.innerHTML = ''; this._lastTally = -1; } }
   setSlots(slots) {
@@ -120,4 +134,4 @@ export const CONTROLS_HTML = `
   </div>
 </div>`;
 
-const TOUCH_KEYS = { fire: 'right stick', aim: 'AIM', block: 'AIM', jump: 'JUMP', sprint: 'stick forward', slide: 'SLIDE', dash: 'SLIDE', grapple: 'HOOK', melee: 'SLASH', reload: 'RELOAD', grenade: 'GRENADE', focus: 'AIM + right stick', next: 'weapon wheel', pause: 'Ⅱ', confirm: 'tap', score: 'SCORE' };
+const TOUCH_KEYS = { fire: 'FIRE', aim: 'AIM', block: 'AIM', jump: 'tap screen', sprint: 'stick forward', slide: 'swipe down', dash: 'swipe down', grapple: 'HOOK', melee: 'SLASH', reload: 'shake / RELOAD', grenade: 'GRENADE', focus: 'AIM + FIRE', next: 'flick gun meter', pause: 'Ⅱ', confirm: 'tap', score: 'SCORE' };

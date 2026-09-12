@@ -4,22 +4,26 @@ export class TouchState {
   reset() {
     this.pointers = new Map(); this.held = new Map(); this.pulses = new Set();
     this.move = { x: 0, y: 0 }; this.look = { x: 0, y: 0 }; this.aim = false;
-    this.stickId = null; this.lookId = null; this.fireStickId = null;
+    this.stickId = null; this.lookId = null; this.aimStickId = null; this.meterId = null;
     this.lookStick = { x: 0, y: 0 };
     this.gestureId = null; this.slideUntil = 0;
     this.jumpTaps = 0; this.jumpGap = false;
+    this.queuedWeapon = null;
   }
-  start(id, kind, x, y, radius = 52) {
+  setWeapons(index, count) { this.weaponIndex = index; this.weaponCount = count; }
+  start(id, kind, x, y, radius = 52, slot = null) {
     if (this.pointers.has(id)) return false;
     if (kind === 'move' && this.stickId !== null) return false;
     if (kind === 'look' && this.lookId !== null) return false;
-    if (kind === 'fireStick' && this.fireStickId !== null) return false;
+    if (kind === 'aimStick' && this.aimStickId !== null) return false;
+    if (kind === 'weaponMeter' && this.meterId !== null) return false;
     if (kind === 'gesture' && this.gestureId !== null) return false;
-    const p = { kind, x, y, originX: x, originY: y, radius, started: this.now(), distance: 0, mode: 'pending' };
+    const p = { kind, x, y, originX: x, originY: y, radius, slot, started: this.now(), distance: 0, mode: 'pending' };
     this.pointers.set(id, p);
     if (kind === 'move') this.stickId = id;
     else if (kind === 'look') this.lookId = id;
-    else if (kind === 'fireStick') { this.fireStickId = id; this.pulses.add('fire'); }
+    else if (kind === 'aimStick') this.aimStickId = id;
+    else if (kind === 'weaponMeter') this.meterId = id;
     else if (kind === 'gesture') this.gestureId = id;
     else if (kind === 'aim') this.aim = !this.aim;
     else { this.held.set(kind, (this.held.get(kind) || 0) + 1); this.pulses.add(kind); }
@@ -27,6 +31,10 @@ export class TouchState {
   }
   drag(id, x, y) {
     const p = this.pointers.get(id); if (!p) return;
+    if (p.kind === 'weaponMeter') {
+      p.distance = Math.max(p.distance, Math.hypot(x - p.originX, y - p.originY));
+      p.x = x; p.y = y; return;
+    }
     if (p.kind === 'gesture') {
       const dx = x - p.originX, dy = y - p.originY;
       p.distance = Math.max(p.distance, Math.hypot(dx, dy));
@@ -41,13 +49,14 @@ export class TouchState {
       }
       p.x = x; p.y = y; return;
     }
-    if (p.kind === 'move' || p.kind === 'fireStick') {
+    if (p.kind === 'move' || p.kind === 'aimStick') {
       const dx = (x - p.originX) / p.radius, dy = (y - p.originY) / p.radius;
-      const length = Math.hypot(dx, dy), magnitude = Math.max(0, (Math.min(length, 1) - 0.12) / 0.88);
+      const deadzone = p.kind === 'aimStick' ? 0.06 : 0.12;
+      const length = Math.hypot(dx, dy), magnitude = Math.max(0, (Math.min(length, 1) - deadzone) / (1 - deadzone));
       const stick = p.kind === 'move' ? this.move : this.lookStick;
       stick.x = length ? dx / length * magnitude : 0;
       stick.y = length ? dy / length * magnitude * (p.kind === 'move' ? -1 : 1) : 0;
-    } else if (p.kind === 'look' || (p.kind === 'fire' && this.lookId === null)) {
+    } else if (p.kind === 'look') {
       this.look.x += x - p.x; this.look.y += y - p.y;
     }
     p.x = x; p.y = y;
@@ -63,9 +72,18 @@ export class TouchState {
       }
       if (cancelled && p.mode === 'slide') { this.pulses.delete('touchSlide'); this.slideUntil = 0; }
     }
-    else if (p.kind === 'fireStick') {
-      this.lookStick = { x: 0, y: 0 }; this.fireStickId = null;
-      if (cancelled) this.pulses.delete('fire');
+    else if (p.kind === 'aimStick') {
+      this.lookStick = { x: 0, y: 0 }; this.aimStickId = null;
+    }
+    else if (p.kind === 'weaponMeter') {
+      this.meterId = null;
+      if (!cancelled && this.weaponCount > 0) {
+        const dx = p.x - p.originX, dy = p.y - p.originY;
+        if (Math.abs(dy) >= 28 && Math.abs(dy) > Math.abs(dx) * 1.2) {
+          const current = this.queuedWeapon ?? this.weaponIndex;
+          this.queuedWeapon = (current + (dy < 0 ? 1 : -1) + this.weaponCount) % this.weaponCount;
+        } else if (p.distance <= 12 && p.slot !== null) this.queuedWeapon = p.slot;
+      }
     }
     else if (p.kind !== 'aim') {
       const count = (this.held.get(p.kind) || 1) - 1;
@@ -76,7 +94,8 @@ export class TouchState {
   }
   sample() {
     const buttons = Object.fromEntries([...this.held.keys(), ...this.pulses].map(k => [k, true]));
-    if (this.fireStickId !== null) { buttons.fire = true; buttons.touchAutoFire = true; }
+    if (this.held.has('fire')) buttons.touchAutoFire = true;
+    if (this.queuedWeapon !== null) { buttons['slot' + (this.queuedWeapon + 1)] = true; this.queuedWeapon = null; }
     if (this.aim) buttons.aim = true;
     // Preserve both taps even when the browser delivers a double tap in one frame.
     if (this.jumpGap) this.jumpGap = false;

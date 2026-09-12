@@ -8,7 +8,7 @@ Plug in your Backbone, then use the left stick to move and the right stick to lo
 
 Touch controls return when you touch the screen or disconnect the controller. Disconnection pauses solo play. Page zoom is disabled, so double taps stay game input.
 
-On the touchscreen, use the left stick to move and hold the right stick to fire while dragging it to aim. Tap open space to jump; swipe down to slide or air dash. Swipe sideways or up to look without firing; tap AIM to toggle zoom. The compact circular weapon selector has four icons: tap one to equip it. The filled quarter marks your current weapon.
+On the touchscreen, use the left stick to move and the right stick to aim. Hold the separate FIRE button above the left stick to shoot. Tap open space to jump; swipe down to slide or air dash. Tap AIM to toggle zoom. Flick the curved vertical gun meter up for the next weapon or down for the previous one, or tap an icon directly. Shake your iPhone to reload; a progress bar appears below the crosshair while the gun reloads. A small RELOAD button is also available.
 
 Open [`ios/DoodleShooter.xcodeproj`](ios/DoodleShooter.xcodeproj). See the [iOS build and controls guide](ios/README.md).
 

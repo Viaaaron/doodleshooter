@@ -16,6 +16,7 @@ export class Input {
     this.canvas = canvas;
     this.state = {}; this.prev = {}; this.frameState = {};
     this.keys = {}; this.mouseBtns = {};
+    this.pendingActions = new Set();
     this.move = { x: 0, y: 0 };
     this.look = { x: 0, y: 0 };
     this.mx = 0; this.my = 0; this.wheel = 0;
@@ -41,8 +42,8 @@ export class Input {
       this.anyInput = true;
     });
     window.addEventListener('keyup', (e) => { const a = KEYMAP[e.code]; if (a) this.keys[a] = false; if (!e.shiftKey) this.keys.sprint = false; });
-    document.addEventListener('visibilitychange', () => { if (document.hidden) { this.keys = {}; this.mouseBtns = {}; this.controller.blockUntilRelease(); } });
-    window.addEventListener('blur', () => { this.keys = {}; this.mouseBtns = {}; this.controller.blockUntilRelease(); });
+    document.addEventListener('visibilitychange', () => { if (document.hidden) { this.keys = {}; this.mouseBtns = {}; this.pendingActions.clear(); this.controller.blockUntilRelease(); } });
+    window.addEventListener('blur', () => { this.keys = {}; this.mouseBtns = {}; this.pendingActions.clear(); this.controller.blockUntilRelease(); });
     this.padState = {}; this.padPrev = {};
     document.addEventListener('mousemove', (e) => {
       if (!this.pointerLocked) return;
@@ -77,7 +78,9 @@ export class Input {
 
   clearActions() {
     this.state = {}; this.padState = {}; this.move = { x: 0, y: 0 }; this.look = { x: 0, y: 0 };
+    this.pendingActions.clear();
   }
+  queueAction(action) { this.pendingActions.add(action); this.lastActive = performance.now(); }
 
   // browsers refuse a new pointer lock for about a second after Esc released the last one, so a
   // failed request is retried until it takes or the game stops wanting it
@@ -102,6 +105,8 @@ export class Input {
     // rotate button states
     this.prev = this.state; this.state = {};
     const s = this.state;
+    for (const action of this.pendingActions) s[action] = true;
+    this.pendingActions.clear();
     const touch = this.touch?.sample();
     if (touch) Object.assign(s, touch.buttons);
     for (const k in this.keys) if (this.keys[k]) s[k] = true;

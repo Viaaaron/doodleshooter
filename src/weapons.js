@@ -70,6 +70,7 @@ const GUNS = {
 };
 
 export class Gun extends ViewModel {
+  unequip() { super.unequip(); this.reloadRequested = false; }
   constructor(ctx, type) {
     super(ctx); Object.assign(this, GUNS[type]); this.isGun = true; this.mag = this.magSize;
     this.fireT = 0; this.reloading = false; this.reloadT = 0; this.spreadCur = this.spread; this.flashT = 0; this.pumpT = 0; this.racked = false; this.needPump = false;
@@ -81,9 +82,12 @@ export class Gun extends ViewModel {
   startReload() {
     if (this.reloading || this.mag >= this.magSize || this.reserve <= 0) return;
     this.reloading = true; this.reloadT = 0; this.racked = false;
+    this.reloadStartMag = this.mag;
+    this.reloadTargetMag = Math.min(this.magSize, this.mag + this.reserve);
     if (this.reloadType === 'shells') audio.shell(); else if (this.reloadType === 'cylinder') audio.cylinder(); else audio.reload();
   }
   update(dt, st) {
+    if (st.reloadPressed && !this.reloading && this.mag < this.magSize && this.reserve > 0) this.reloadRequested = true;
     this.fireT -= dt; if (this.flashT > 0) { this.flashT -= dt; if (this.flashT <= 0) this.flash.visible = false; }
     // moving and flying bloom the shot; aiming down the sights steadies most of that, the scope nearly all of it
     const base = st.aim ? this.adsSpread : this.spread; let moveAdd = Math.min(st.speed, 24) * this.moveSpread + (st.grounded ? 0 : 0.01) + (st.sliding ? 0.008 : 0);
@@ -121,9 +125,9 @@ export class Gun extends ViewModel {
       r.z += 0.35 * s; r.x += 0.15 * s; p.y -= 0.04 * s; if (this.handL) this.handL.position.set(this.handLPos.x + 0.1 * s, this.handLPos.y - 0.12 * s, this.handLPos.z + 0.55 * s);
       if (this.reloadT >= this.reloadDur) { this.mag++; this.reserve--; this.reloadT = 0; if (this.mag >= this.magSize || this.reserve <= 0) { this.reloading = false; if (this.handL) this.handL.position.copy(this.handLPos); if (this.needPump) this.pumpT = this.cycleDur; } else audio.shell(); }
     }
-    if (st.reloadPressed && this.mag < this.magSize && this.reserve > 0 && !this.reloading && this.pumpT <= 0) { this.startReload(); return; }
+    if (this.reloadRequested && this.pumpT <= 0) { this.reloadRequested = false; this.startReload(); return; }
     const wantFire = this.auto || st.repeatFire ? st.fire : st.firePressed;
-    if (wantFire && this.fireT <= 0 && this.pumpT <= 0 && !st.blockFire) {
+    if (wantFire && (!this.reloading || st.firePressed) && this.fireT <= 0 && this.pumpT <= 0 && !st.blockFire) {
       if (this.mag <= 0) { if (st.firePressed) { audio.empty(); this.startReload(); } }
       else { if (this.reloading) { this.reloading = false; if (this.handL) this.handL.position.copy(this.handLPos); } this.fire(st); }
     }
